@@ -3,6 +3,17 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --cinza: #121f2e;
+}
+
+@theme {
+  --breakpoint-sm: 425px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1440px;
+  --breakpoint-3xl: 1600px;
+  --breakpoint-4xl: 1800px;
 }
 
 @theme inline {
@@ -10,6 +21,15 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* cores */
+  --color-cinza: var(--cinza);
+
+  /* fontes */
+  --font-bebas-neue: var(--font-bebas-neue);
+  --font-koulen: var(--font-koulen);
+  --font-poppins: var(--font-poppins);
+  --font-oswald: var(--font-oswald);
 }
 
 @media (prefers-color-scheme: dark) {

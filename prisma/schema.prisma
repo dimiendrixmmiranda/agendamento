@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Profissional {
+  id                String @id @default(cuid())
+  tipo              TipoProfissional
+  nome              String
+  especialidade     String
+  descricao         String?
+  corCalendario     String?
+  disponibilidades  Disponibilidade[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+
+
+model Disponibilidade {
+  id               String @id @default(cuid())
+  profissionalId   String
+  profissional     Profissional @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
+  data             DateTime
+  localId          String
+  local            LocalAtendimento @relation(fields: [localId], references: [id])
+  horarios         Horario[]
+  createdAt        DateTime @default(now())
+}
+
+
+
+model Horario {
+  id String @id @default(cuid())
+  disponibilidadeId String
+  disponibilidade Disponibilidade @relation(fields: [disponibilidadeId], references: [id], onDelete: Cascade)
+  inicio String
+  fim String
+}
+
+model LocalAtendimento {
+  id                 String @id @default(cuid())
+  nome               String @unique
+  endereco           String?
+  disponibilidades   Disponibilidade[]
+  createdAt          DateTime @default(now())
+}
+
+
+enum TipoProfissional {
+  MEDICO
+  LABORATORIO
+}
