@@ -44,3 +44,52 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.teste .p-dialog-header{
+  background-color: #18181b;
+}
+
+.p-dialog-header-icons{
+  padding: 1em;
+}
+
+
+@media print {
+
+    body * {
+        visibility: hidden;
+    }
+
+    #preview,
+    #preview * {
+        visibility: visible;
+    }
+
+    #preview {
+        position: absolute;
+        left: 0;
+        top: 0;
+        overflow: hidden;
+    }
+
+}
+
+@media print {
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: white; 
+        color: black;
+    }
+
+    .folha-a4 {
+        page-break-after: always;
+        break-after: page;
+    }
+
+    .folha-a4:last-child {
+        page-break-after: auto;
+    }
+
+}

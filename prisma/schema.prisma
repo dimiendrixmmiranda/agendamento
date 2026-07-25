@@ -8,11 +8,11 @@ datasource db {
 }
 
 
-model Profissional {
+model Agendamento {
   id                String @id @default(cuid())
   tipo              TipoProfissional
   nome              String
-  especialidade     String
+  especialidades    String[]
   descricao         String?
   corCalendario     String?
   disponibilidades  Disponibilidade[]
@@ -21,19 +21,16 @@ model Profissional {
 }
 
 
-
 model Disponibilidade {
   id               String @id @default(cuid())
   profissionalId   String
-  profissional     Profissional @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
+  profissional     Agendamento @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
   data             DateTime
   localId          String
   local            LocalAtendimento @relation(fields: [localId], references: [id])
   horarios         Horario[]
   createdAt        DateTime @default(now())
 }
-
-
 
 model Horario {
   id String @id @default(cuid())
@@ -43,16 +40,54 @@ model Horario {
   fim String
 }
 
+
 model LocalAtendimento {
-  id                 String @id @default(cuid())
-  nome               String @unique
-  endereco           String?
-  disponibilidades   Disponibilidade[]
+  id                 String   @id @default(cuid())
+  nome               String
+  telefone           String?
+  slug               String
+  rua                String
+  numero             String
+  bairro             String
+
+  pontoDeReferencia  String?
+  observacao         String?
+
   createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  disponibilidades   Disponibilidade[]
 }
 
+model Profissional {
+  id              String @id @default(cuid())
+
+  nome            String
+  tipo            TipoProfissional
+
+  especialidades  EspecialidadeMedica[]
+  exames          TipoExame[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
 
 enum TipoProfissional {
   MEDICO
   LABORATORIO
+}
+
+enum EspecialidadeMedica {
+  CARDIOLOGIA
+  ORTOPEDIA
+  PSIQUIATRIA
+  GINECOLOGIA
+  NEUROLOGISTA
+}
+
+enum TipoExame {
+  MAPA
+  HOLTER
+  ULTRASSONOGRAFIA_ARTICULACAO
+  ULTRASSONOGRAFIA_ABDOMEM
 }

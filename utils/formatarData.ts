@@ -1,13 +1,12 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export default function formatarData(data: string | Date) {
+export default function formatarData(data: Date) {
     return format(
-        new Date(data),
+        data,
         "EEEE, dd 'de' MMMM 'de' yyyy",
         {
-            locale: ptBR
+            locale: ptBR,
         }
     );
-
 }

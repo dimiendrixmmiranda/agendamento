@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CiCalendarDate } from "react-icons/ci";
 import { FaArrowsRotate, FaPlus, FaRegLightbulb } from "react-icons/fa6";
 import { IoIosInformationCircleOutline } from "react-icons/io";
@@ -9,6 +9,10 @@ import { FaRegTrashAlt } from "react-icons/fa";
 import { setDate } from "date-fns";
 import { IoCalendarNumberOutline } from "react-icons/io5";
 import formatarData from "@/utils/formatarData";
+import { useLocais } from "@/hooks/useLocais";
+import Locais from "@/types/Locais";
+import { useProfissionais } from "@/hooks/useProfissionais";
+import { TipoProfissional } from "@prisma/client";
 
 interface Horario {
     inicio: string
@@ -17,33 +21,48 @@ interface Horario {
 
 interface Atendimento {
     data: Date
-    local: string
+    local: Locais
     horario: Horario[]
 }
 
-export default function Page() {
-    const [tipo, setTipo] = useState<"medico" | "laboratorio">("medico")
+export default function AdicionarView() {
+    const [tipo, setTipo] = useState<TipoProfissional>(
+        TipoProfissional.MEDICO
+    )
     const [nome, setNome] = useState('')
     const [descricao, setDescricao] = useState('')
     const [cor, setCor] = useState('')
-    const [especialidade, setEspecialidade] = useState('')
     const [visible, setVisible] = useState(false);
 
     const [data, setData] = useState("")
-    const [localDeAtendimento, setLocalDeAtendimento] = useState('')
+    const [localDeAtendimento, setLocalDeAtendimento] = useState<Locais | null>(null)
     const [horarioInicio, setHorarioInicio] = useState('')
     const [horarioFim, setHorarioFim] = useState('')
     const [horarios, setHorarios] = useState<Horario[]>([])
     const [atendimentos, setAtendimentos] = useState<Atendimento[]>([])
 
-    const especialidades = [
-        'ultrassom',
-        'ortopedia',
-        'psiquiatria',
-        'cardiologia',
-        'ginecologista',
-        'neurologista',
-    ]
+    const { locais, loading } = useLocais()
+
+    const { profissionais } = useProfissionais()
+
+
+    const [filtroTipo, setFiltroTipo] = useState<any[]>([])
+    const [profissional, setProfissional] = useState('')
+    const [especialidade, setEspecialidade] = useState<string[]>([])
+    const [exames, setexames] = useState<string[]>([])
+
+
+    useEffect(() => {
+        if (tipo === "MEDICO") {
+            setFiltroTipo(profissionais.filter(prof => prof.tipo === 'MEDICO'))
+        } else if (tipo === "LABORATORIO") {
+            setFiltroTipo(profissionais.filter(prof => prof.tipo === 'LABORATORIO'))
+        } else {
+            setFiltroTipo([])
+        }
+    }, [tipo, profissionais])
+
+    console.log(filtroTipo)
 
     const listaDeCores = [
         {
@@ -58,10 +77,6 @@ export default function Page() {
             nome: 'laranja',
             cor: '#F45B26'
         },
-    ]
-    const locaisDeAtendimento = [
-        'posto-de-saude-central',
-        'clinica-da-mulher',
     ]
 
     async function salvar() {
@@ -90,7 +105,7 @@ export default function Page() {
 
         const result = await response.json();
 
-        console.log(result);
+        // console.log(result)
     }
 
     return (
@@ -115,8 +130,10 @@ export default function Page() {
                         <span className="col-span-2">Tipo: <b className="text-red-600">*</b></span>
                         <button
                             type="button"
-                            onClick={() => setTipo("medico")}
-                            className={`h-12 rounded-lg border transition ${tipo === "medico"
+                            onClick={() => {
+                                setTipo("MEDICO")
+                            }}
+                            className={`h-12 rounded-lg border transition ${tipo === "MEDICO"
                                 ? "bg-blue-600 text-white border-blue-600"
                                 : "bg-white hover:bg-zinc-50"
                                 }`}
@@ -125,8 +142,10 @@ export default function Page() {
                         </button>
                         <button
                             type="button"
-                            onClick={() => setTipo("laboratorio")}
-                            className={`h-12 rounded-lg border transition ${tipo === "laboratorio"
+                            onClick={() => {
+                                setTipo("LABORATORIO")
+                            }}
+                            className={`h-12 rounded-lg border transition ${tipo === "LABORATORIO"
                                 ? "bg-green-600 text-white border-green-600"
                                 : "bg-white hover:bg-zinc-50"
                                 }`}
@@ -134,7 +153,22 @@ export default function Page() {
                             Laboratório
                         </button>
                     </div>
+
+                    {/* VAO CARREGAR DOIS SELECTS */}
+
                     <div className="flex flex-col">
+                        <span>Nome: <b className="text-red-600">*</b></span>
+                        <select name="filtroTipo" id="filtroTipo">
+                            {
+                                filtroTipo.map((filtro, i) => {
+                                    return (<option key={i} value="filtro">{filtro}</option>)
+                                })
+                            }
+                        </select>
+                    </div>
+                    {/* 
+                     
+                    {/* <div className="flex flex-col">
                         <span>Nome: <b className="text-red-600">*</b></span>
                         <input className="h-[35px] p-2 border border-zinc-400 rounded-lg" placeholder="Ex: Doutor Ramiro" type="text" name="nome" id="nome" value={nome} onChange={(e) => setNome(e.target.value)} />
                     </div>
@@ -150,7 +184,7 @@ export default function Page() {
                                 })
                             }
                         </select>
-                    </div>
+                    </div> */}
                     <div className="flex flex-col">
                         <span>Descrição / Observações</span>
                         <textarea className="p-2 border border-zinc-400 rounded-lg h-[180px]" name="descricao" id="descricao" value={descricao} onChange={(e) => setDescricao(e.target.value)}></textarea>
@@ -229,7 +263,7 @@ export default function Page() {
                                                             <div className="grid grid-cols-2 gap-4">
                                                                 <div>
                                                                     <h4>Local de Atendimento:</h4>
-                                                                    <span>{at.local}</span>
+                                                                    <span>{at.local.nome}</span>
                                                                 </div>
                                                                 <div>
                                                                     <h4>Horarios</h4>
@@ -300,12 +334,23 @@ export default function Page() {
                                         <div className="flex flex-col gap-1">
                                             <h2 className="text-xl">Local de Atendimento: <b className="text-red-600">*</b></h2>
                                             <div className="grid grid-cols-[1fr_170px] gap-2">
-                                                <select className="h-[50px] p-2 border border-zinc-400 rounded-lg" name="locaisDeAtendimento" id="localDeAtendimento" value={localDeAtendimento} onChange={(e) => setLocalDeAtendimento(e.target.value)}>
+                                                <select
+                                                    className="h-[50px] p-2 border border-zinc-400 rounded-lg"
+                                                    name="locaisDeAtendimento"
+                                                    id="localDeAtendimento"
+                                                    value={localDeAtendimento?.id ?? ""}
+                                                    onChange={(e) => {
+                                                        const localSelecionado = locais.find(
+                                                            (local) => local.id === e.target.value
+                                                        )
+
+                                                        setLocalDeAtendimento(localSelecionado ?? null)
+                                                    }}>
                                                     <option value="">Selecione</option>
                                                     {
-                                                        locaisDeAtendimento.map((local, i) => {
+                                                        locais.map((local, i) => {
                                                             return (
-                                                                <option key={i} value={local}>{local}</option>
+                                                                <option key={i} value={local.id}>{local.nome}</option>
                                                             )
                                                         })
                                                     }
@@ -380,6 +425,11 @@ export default function Page() {
                                             <button
                                                 className="border border-zinc-400 rounded-lg p-2 text-lg bg-green-600"
                                                 onClick={() => {
+                                                    if (!localDeAtendimento) {
+                                                        alert("Selecione um local")
+                                                        return
+                                                    }
+
                                                     const novoAtendimento: Atendimento = {
                                                         data: new Date(data),
                                                         local: localDeAtendimento,
@@ -391,14 +441,10 @@ export default function Page() {
                                                         novoAtendimento
                                                     ])
 
-                                                    // limpa o dialog
                                                     setData("")
-                                                    setLocalDeAtendimento("")
+                                                    setLocalDeAtendimento(null)
                                                     setHorarios([])
-
-                                                    // fecha
                                                     setVisible(false)
-
                                                 }}
                                             >
                                                 Salvar
@@ -409,7 +455,6 @@ export default function Page() {
                             </div>
                         </Dialog>
                     </div>
-
                 </div>
                 <div>
                     <button>Cancelar</button>

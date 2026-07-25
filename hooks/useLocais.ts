@@ -1,39 +1,40 @@
 'use client'
 
-import { Profissional } from "@prisma/client"
+import Locais from "@/types/Locais"
 import { useEffect, useState } from "react"
 
-export function useProfissionais() {
+export function useLocais() {
 
-    const [profissionais, setProfissionais] = useState<Profissional[]>([])
+    const [locais, setLocais] = useState<Locais[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
 
-    async function buscarProfissionais() {
+    async function buscarlocais() {
         try {
             setLoading(true)
-            const response = await fetch("/api/profissional")
+            const response = await fetch("/api/locais")
             if (!response.ok) {
-                throw new Error("Erro ao buscar profissionais")
+                throw new Error("Erro ao buscar locais")
             }
             const data = await response.json()
-            setProfissionais(data)
+            setLocais(data)
         } catch (err) {
             console.error(err)
-            setError("Erro ao carregar profissionais")
+            setError("Erro ao carregar locais")
         } finally {
             setLoading(false)
         }
     }
 
     useEffect(() => {
-        buscarProfissionais()
+        buscarlocais()
     }, [])
 
     return {
-        profissionais,
+        locais,
         loading,
         error,
+        atualizar: buscarlocais
     }
 
 }
