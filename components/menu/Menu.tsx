@@ -5,8 +5,8 @@ import { IoLocationSharp } from "react-icons/io5";
 import { RiUserAddFill } from "react-icons/ri";
 
 interface MenuProps {
-    pagina: "home" | "adicionar" | "adicionarLocal" | "adicionarProfissional" | 'adicionarPreparos';
-    onChange: (pagina: "home" | "adicionar" | "adicionarLocal" | "adicionarProfissional" | "adicionarPreparos") => void;
+    pagina: "home" | "adicionar" | "adicionarLocal" | "adicionarProfissional" | 'adicionarPreparos' | 'tabela';
+    onChange: (pagina: "home" | "adicionar" | "adicionarLocal" | "adicionarProfissional" | "adicionarPreparos" | 'tabela') => void;
 }
 
 
@@ -42,7 +42,7 @@ export default function Menu({ pagina, onChange }: MenuProps) {
                                 <FaPlus />
                             </div>
                             <div>
-                                <h4>Adicionar</h4>
+                                <h4>Adicionar Agendamento</h4>
                             </div>
                         </button>
                     </li>
@@ -73,6 +73,16 @@ export default function Menu({ pagina, onChange }: MenuProps) {
                             </div>
                             <div>
                                 <h4>Preparos</h4>
+                            </div>
+                        </button>
+                    </li>
+                    <li>
+                        <button onClick={() => onChange("tabela")} className={`flex items-center gap-2 text-xl p-3 rounded-xl transition-all duration-300 hover:bg-blue-600 w-full cursor-pointer ${pagina === 'tabela' ? 'bg-blue-600' : ''}`}>
+                            <div>
+                                <RiUserAddFill />
+                            </div>
+                            <div>
+                                <h4>Tabela</h4>
                             </div>
                         </button>
                     </li>

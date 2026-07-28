@@ -11,7 +11,6 @@ import { TiClipboard } from "react-icons/ti";
 
 export default function AdicionarProfissionalView() {
     const {profissionais} = useProfissionais()
-    console.log(profissionais)
     const [tipo, setTipo] = useState<TipoProfissional>(
         TipoProfissional.MEDICO
     )

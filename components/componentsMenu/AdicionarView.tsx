@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { CiCalendarDate } from "react-icons/ci";
 import { FaArrowsRotate, FaPlus, FaRegLightbulb } from "react-icons/fa6";
-import { IoIosInformationCircleOutline } from "react-icons/io";
+import { IoIosInformationCircleOutline, IoIosSave } from "react-icons/io";
 import { Dialog } from 'primereact/dialog';
 import Calendario from "@/components/calendario/Calendario";
 import { FaRegTrashAlt } from "react-icons/fa";
@@ -14,6 +14,9 @@ import Locais from "@/types/Locais";
 import { useProfissionais } from "@/hooks/useProfissionais";
 import { Profissional, TipoProfissional } from "@prisma/client";
 import { listaDeCores } from "@/utils/ListaDeCores";
+import { TbCancel } from "react-icons/tb";
+import ConfirmDialog from "../dialog/ConfirmDialog";
+import { useDialog } from "@/hooks/useDialog";
 
 interface Horario {
     inicio: string
@@ -30,6 +33,8 @@ export default function AdicionarView() {
     const [tipo, setTipo] = useState<TipoProfissional>(
         TipoProfissional.MEDICO
     )
+    const { confirm } = useDialog();
+
     const [descricao, setDescricao] = useState('')
     const [cor, setCor] = useState('')
     const [visible, setVisible] = useState(false);
@@ -102,7 +107,7 @@ export default function AdicionarView() {
         }
         const result = await response.json();
         console.log("Agendamento criado:", result);
-        
+
     }
 
     function stringParaData(data: string) {
@@ -116,6 +121,16 @@ export default function AdicionarView() {
             : profissional.exames
         : [];
 
+    function removerDia(index: number) {
+        setAtendimentos((prev) =>
+            prev.filter((_, i) => i !== index)
+        );
+    }
+    function removerHorario(index: number) {
+        setHorarios((prev) =>
+            prev.filter((_, i) => i !== index)
+        );
+    }
     return (
         <div className="w-full min-h-screen font-oswald bg-zinc-200 text-black p-8 flex flex-col gap-5">
             <div className="flex items-center gap-2">
@@ -128,14 +143,14 @@ export default function AdicionarView() {
                 </div>
             </div>
             <div className="flex">
-                <div className="grid grid-cols-[600px_1fr] gap-4">
+                <div className="grid grid-cols-[500px_1fr] gap-4">
                     {/* Informações gerais */}
                     <div className="border border-zinc-400 rounded-xl p-4">
                         <div className="flex items-center gap-2">
                             <FaArrowsRotate className="text-xl" />
                             <h3 className="font-bold text-2xl">Informções Gerais</h3>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-2">
                             <span className="col-span-2">Tipo: <b className="text-red-600">*</b></span>
                             <button
                                 type="button"
@@ -168,7 +183,7 @@ export default function AdicionarView() {
                             filtroTipo.length > 0 ? (
                                 <div className="flex flex-col">
                                     <span>Nome: <b className="text-red-600">*</b></span>
-                                    <select name="filtroTipo" id="filtroTipo" value={profissionalId} onChange={(e) => setProfissionalId(e.target.value)}>
+                                    <select className="h-[35px] border border-zinc-500 rounded-xl px-2" name="filtroTipo" id="filtroTipo" value={profissionalId} onChange={(e) => setProfissionalId(e.target.value)}>
                                         <option value="">Selecione</option>
                                         {
                                             filtroTipo.map((filtro, i) => {
@@ -191,9 +206,9 @@ export default function AdicionarView() {
                                             <b className="text-red-600">*</b>
                                         </span>
 
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center">
                                             <select
-                                                className="w-full"
+                                                className="h-[35px] border border-zinc-500 rounded-l-xl px-2 w-full"
                                                 value={especialidadeSelecionada}
                                                 onChange={(e) =>
                                                     setEspecialidadeSelecionada(e.target.value)
@@ -209,14 +224,13 @@ export default function AdicionarView() {
                                             </select>
 
                                             <button
+                                                className="bg-green-600 h-[35px] px-2 rounded-r-xl text-white text-shadow-[1px_1px_2px_black]"
                                                 onClick={() => {
                                                     if (!especialidadeSelecionada) return;
-
                                                     setEspecialidadesSelecionadas([
                                                         ...especialidadesSelecionadas,
                                                         especialidadeSelecionada
                                                     ]);
-
                                                     setEspecialidadeSelecionada("");
                                                 }}
                                             >
@@ -284,19 +298,19 @@ export default function AdicionarView() {
                             <IoIosInformationCircleOutline className="text-2xl" />
                             <span>Configure os dias da semana em que o profissional atende, os locais e horarios disponíveis.</span>
                         </div>
-                        <div className="flex flex-col gap-4">
-                            <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-4 h-full">
+                            <div className="flex flex-col gap-2 2xl:flex-row 2xl:items-center 2xl:justify-between">
                                 <h3 className="text-lg font-bold">Disponibilidade:</h3>
-                                <button className="bg-blue-600 flex items-center gap-1 text-white p-2 rounded-xl" onClick={() => setVisible(true)}>
+                                <button className="bg-blue-600 flex justify-center items-center gap-2 text-white p-2 rounded-xl" onClick={() => setVisible(true)}>
                                     <FaPlus />
                                     <p>Adicionar dia de Atendimento</p>
                                 </button>
                             </div>
                             {/* dia horario e local de atendimento renderizados */}
-                            <div>
+                            <div className="w-full h-full">
                                 {
                                     atendimentos.length <= 0 ? (
-                                        <div>
+                                        <div className="flex items-center justify-center h-full text-2xl">
                                             <h3>Nenhum atendimento adicionado!</h3>
                                         </div>
                                     ) : (
@@ -307,19 +321,34 @@ export default function AdicionarView() {
                                                         return (
                                                             <li key={i} className="border border-zinc-400 rounded-lg p-4">
                                                                 <div className="flex items-center justify-between">
-                                                                    <div className="flex items-center gap-2 text-xl font-bold">
+                                                                    <div className="flex items-center gap-2 text-lg font-bold">
                                                                         <IoCalendarNumberOutline />
-                                                                        <h3 className="capitalize">{formatarData(at.data)}</h3>
+                                                                        <h3 className="capitalize line-clamp-1 min-w-0">{formatarData(at.data)}</h3>
                                                                     </div>
-                                                                    <button className="flex items-center gap-2 p-2 border border-red-500 text-red-500 rounded-lg">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            confirm({
+                                                                                title: "Remover dia",
+                                                                                message: "Deseja realmente remover este dia de atendimento?",
+                                                                                confirmText: "Remover",
+                                                                                cancelText: "Cancelar",
+                                                                                onConfirm: () => {
+                                                                                    removerDia(i);
+                                                                                }
+                                                                            })
+                                                                        }}
+                                                                        className="flex items-center gap-2 p-2 border border-red-500 text-red-500 rounded-lg"
+                                                                    >
                                                                         <FaRegTrashAlt />
-                                                                        <span>Remover dia</span>
+                                                                        <span className="hidden 2xl:block whitespace-nowrap">
+                                                                            Remover dia
+                                                                        </span>
                                                                     </button>
                                                                 </div>
-                                                                <div className="grid grid-cols-2 gap-4">
+                                                                <div className="grid grid-cols-[1fr_150px] gap-4 2xl:grid-cols-2">
                                                                     <div>
-                                                                        <h4>Local de Atendimento:</h4>
-                                                                        <span>{at.local.nome}</span>
+                                                                        <h4 className="text-lg font-bold">Local de Atendimento:</h4>
+                                                                        <span className="leading-5 flex">{at.local.nome}</span>
                                                                     </div>
                                                                     <div>
                                                                         <h4>Horarios</h4>
@@ -328,12 +357,12 @@ export default function AdicionarView() {
                                                                                 at.horario.map((hrr, i) => {
                                                                                     return (
                                                                                         <li key={i} className="grid grid-cols-2 border border-zinc-400 p-1 rounded-lg">
-                                                                                            <div className="flex items-center gap-2">
+                                                                                            <div className="flex items-center justify-center gap-2 text-sm">
                                                                                                 <span>Início:</span>
                                                                                                 <span>{hrr.inicio}</span>
                                                                                             </div>
-                                                                                            <div className="flex items-center gap-2">
-                                                                                                <span>Fim</span>
+                                                                                            <div className="flex items-center justify-center gap-2 text-sm">
+                                                                                                <span>Fim:</span>
                                                                                                 <span>{hrr.fim}</span>
                                                                                             </div>
                                                                                         </li>
@@ -365,7 +394,7 @@ export default function AdicionarView() {
                                     </div>
                                 }
                                 visible={visible}
-                                className="bg-zinc-700 p-4 rounded-xl w-full max-w-[1000px]"
+                                className="bg-cinza p-4 rounded-xl w-full max-w-[1000px] border borde-white"
                                 onHide={() => setVisible(false)}
                             >
                                 <div className="mt-4 font-oswald">
@@ -375,7 +404,7 @@ export default function AdicionarView() {
                                                 <h2>Selecione o dia: <b className="text-red-600">*</b></h2>
                                                 <span className="text-sm">Clique em um dia do calendário...</span>
                                             </div>
-                                            <div className="bg-red-600">
+                                            <div className="">
                                                 <input
                                                     className="p-2 border border-zinc-400 rounded-lg h-[45px]"
                                                     type="date"
@@ -391,7 +420,7 @@ export default function AdicionarView() {
                                                 <h2 className="text-xl">Local de Atendimento: <b className="text-red-600">*</b></h2>
                                                 <div className="grid grid-cols-[1fr_170px] gap-2">
                                                     <select
-                                                        className="h-[50px] p-2 border border-zinc-400 rounded-lg"
+                                                        className="h-[50px] p-2 border border-zinc-400 bg-zinc-900 rounded-lg"
                                                         name="locaisDeAtendimento"
                                                         id="localDeAtendimento"
                                                         value={localDeAtendimento?.id ?? ""}
@@ -456,7 +485,7 @@ export default function AdicionarView() {
                                                                                     <p className="mx-auto">{horario.inicio}</p>
                                                                                     <span className="mx-auto">Até</span>
                                                                                     <p className="mx-auto">{horario.fim}</p>
-                                                                                    <button className="mx-auto"><FaRegTrashAlt /></button>
+                                                                                    <button className="mx-auto" onClick={() => removerHorario(i)}><FaRegTrashAlt /></button>
                                                                                 </li>
                                                                             )
                                                                         })
@@ -483,6 +512,14 @@ export default function AdicionarView() {
                                                     onClick={() => {
                                                         if (!localDeAtendimento) {
                                                             alert("Selecione um local")
+                                                            return
+                                                        }
+                                                        if (!data) {
+                                                            alert("Selecione uma data")
+                                                            return
+                                                        }
+                                                        if (horarios.length <= 0) {
+                                                            alert("Adicione pelo menos um horário")
                                                             return
                                                         }
 
@@ -512,8 +549,15 @@ export default function AdicionarView() {
                             </Dialog>
                         </div>
                     </div>
-                    <div>
-                        <button onClick={() => salvar()}>Salvar</button>
+                    <div className="grid grid-cols-2 w-fit gap-4 ml-auto col-span-2">
+                        <button onClick={() => salvar()} className="flex items-center justify-center text-center gap-2 px-4 py-2 text-xl font-bold border border-blue-600 text-blue-950 rounded-xl duration-300 transition-all cursor-pointer hover:bg-blue-600 hover:text-white hover:text-shadow-[1px_1px_2px_black]">
+                            <IoIosSave />
+                            <p>Salvar</p>
+                        </button>
+                        <button className="flex items-center justify-center text-center gap-2 px-4 py-2 text-xl font-bold border border-red-600 text-red-700 rounded-xl duration-300 transition-all cursor-pointer hover:bg-red-600 hover:text-white hover:text-shadow-[1px_1px_2px_black]">
+                            <TbCancel />
+                            <p>Cancelar</p>
+                        </button>
                     </div>
                 </div>
             </div>

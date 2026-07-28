@@ -18,7 +18,7 @@ export default function CalendarioCabecalho({
     irParaHoje,
 }: CalendarioCabecalhoProps) {
     return (
-        <div className="grid grid-cols-[auto_1fr_40px] gap-4 border-b px-6 py-4">
+        <div className="grid grid-cols-[auto_1fr_40px] gap-4 border-b px-6 py-4 bg-cinza text-white text-shadow-[1px_1px_2px_black]">
             <div className="flex items-center gap-3">
                 <button
                     onClick={mesAnterior}

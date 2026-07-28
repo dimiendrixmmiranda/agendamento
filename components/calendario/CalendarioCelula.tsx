@@ -30,7 +30,7 @@ export default function CalendarioCelula({ dia, eventos, dataSelecionada, onSele
 					: "hover:bg-zinc-50"
 				}
         ${!dia.isMesAtual && !isSelecionado
-					? "bg-zinc-100 text-zinc-400"
+					? "bg-zinc-400 text-zinc-100"
 					: ""
 				}
     `}

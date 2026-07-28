@@ -1,3 +1,4 @@
+import { useDialog } from "@/hooks/useDialog";
 import { useLocais } from "@/hooks/useLocais";
 import gerarSlug from "@/utils/GerarSlug";
 import { useState } from "react";
@@ -12,6 +13,8 @@ import { PiBuildingsFill } from "react-icons/pi";
 import { TbHexagonNumber8Filled } from "react-icons/tb";
 
 export default function AdicionarLocalView() {
+    const { confirm } = useDialog();
+
     const [nome, setNome] = useState('')
     const [telefone, setTelefone] = useState('')
     const [rua, setRua] = useState('')
@@ -20,7 +23,11 @@ export default function AdicionarLocalView() {
     const [pontoDeReferencia, setPontoDeReferencia] = useState('')
     const [observacao, setObservacao] = useState('')
 
-    const { locais, loading } = useLocais()
+    const {
+        locais,
+        loading,
+        atualizar
+    } = useLocais();
 
     async function salvar() {
         const dados = {
@@ -61,6 +68,25 @@ export default function AdicionarLocalView() {
         setBairro('')
         setPontoDeReferencia('')
         setObservacao('')
+    }
+
+    async function removerLocal(id: string) {
+        try {
+            const response = await fetch(`/api/locais/${id}`, {
+                method: "DELETE",
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(data);
+                return;
+            }
+
+            atualizar();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     return (
@@ -206,7 +232,18 @@ export default function AdicionarLocalView() {
                                             <button className="border border-amber-500 p-2 rounded-xl text-amber-500">
                                                 <HiOutlinePencilSquare />
                                             </button>
-                                            <button className="border border-red-500 p-2 rounded-xl text-red-500">
+                                            <button
+                                                className="border border-red-500 p-2 rounded-xl text-red-500"
+                                                onClick={() => {
+                                                    confirm({
+                                                        title: "Remover local",
+                                                        message: `Deseja realmente remover o local "${local.nome}"?`,
+                                                        confirmText: "Remover",
+                                                        cancelText: "Cancelar",
+                                                        onConfirm: () => removerLocal(local.id)
+                                                    });
+                                                }}
+                                            >
                                                 <FaRegTrashAlt />
                                             </button>
                                         </div>

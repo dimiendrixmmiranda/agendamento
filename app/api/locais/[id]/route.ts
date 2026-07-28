@@ -32,16 +32,30 @@ export async function DELETE(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    try {
+        const { id } = await params;
 
-    const { id } = await params;
+        await prisma.localAtendimento.delete({
+            where: {
+                id
+            }
+        });
 
-    await prisma.localAtendimento.delete({
-        where: {
-            id
-        }
-    });
+        return NextResponse.json({
+            message: "Local removido."
+        });
 
-    return NextResponse.json({
-        message: "Local removido."
-    });
+    } catch (error: any) {
+        console.error("ERRO COMPLETO:", error);
+
+        return NextResponse.json(
+            {
+                error: error.message,
+                code: error.code
+            },
+            {
+                status: 500
+            }
+        );
+    }
 }

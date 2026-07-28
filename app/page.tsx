@@ -13,6 +13,7 @@ import { Suspense, lazy, useState } from "react";
 import Loading from "@/components/loading/Loading";
 import { Agendamento, useAgendamento } from "@/hooks/useAgendamentos";
 import AdicionarPreparoView from "@/components/componentsMenu/AdicionarPreparoView";
+import TabelaView from "@/components/componentsMenu/TabelaView";
 
 const HomeView = lazy(() => import("@/components/componentsMenu/HomeView"));
 const AdicionarView = lazy(() => import("@/components/componentsMenu/AdicionarView"));
@@ -20,7 +21,7 @@ const AdicionarLocalView = lazy(() => import("@/components/componentsMenu/Adicio
 const AdicionarProfissionalView = lazy(() => import("@/components/componentsMenu/AdicionarProfissionalView"));
 
 export default function Home() {
-	const [pagina, setPagina] = useState<"home" | "adicionar" | 'adicionarLocal' | 'adicionarProfissional' | 'adicionarPreparos'>("home");
+	const [pagina, setPagina] = useState<"home" | "adicionar" | 'adicionarLocal' | 'adicionarProfissional' | 'adicionarPreparos' | 'tabela'>("home");
 
 	const {
 		agendamento,
@@ -107,6 +108,7 @@ export default function Home() {
 					{pagina === "adicionarLocal" && <AdicionarLocalView />}
 					{pagina === "adicionarProfissional" && <AdicionarProfissionalView />}
 					{pagina === "adicionarPreparos" && <AdicionarPreparoView />}
+					{pagina === "tabela" && <TabelaView />}
 				</Suspense>
 			</div>
 		</div>
