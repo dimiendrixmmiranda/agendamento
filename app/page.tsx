@@ -92,9 +92,7 @@ export default function Home() {
 			);
 		})
 	)
-	
-	// console.log(agendamentosDoMes)
-	
+
 	return (
 		<div className="grid grid-cols-[300px_1fr] min-h-screen">
 			<Menu

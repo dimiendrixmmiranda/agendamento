@@ -8,8 +8,12 @@ import Mapa from "@/preparos/Mapa";
 import Pedido from "@/preparos/Pedido";
 import TesteDeEsforco from "@/preparos/TesteDeEsforco";
 import Retorno from "@/preparos/Retorno";
+import UltrassonografiaDaArticulacao from "@/preparos/UltrassonografiaDaArticulacao";
+import UltrassonografiaDePartesMoles from "@/preparos/UltrassonografiaDePartesMoles";
+import UltrassonografiaDeCervical from "@/preparos/UltrassonografiaDePartesCervical";
+import UltrassonografiaDeTireoide from "@/preparos/UltrassonografiaDeTireoide";
 
-type TipoPreparo = "PSIQUIATRIA" | "ORTOPEDIA" | "MAPA" | "PEDIDO" | 'TESTE-DE-ESFORCO' | 'RETORNO';
+type TipoPreparo = "PSIQUIATRIA" | "ORTOPEDIA" | "MAPA" | "PEDIDO" | 'TESTE-DE-ESFORCO' | 'RETORNO' | "ULTRASSONOGRAFIA-DE-ARTICULACAO" | "ULTRASSONOGRAFIA-DE-PARTES-MOLES" | "ULTRASSONOGRAFIA-DE-CERVICAL" | "ULTRASSONOGRAFIA-DE-TIREOIDE";
 
 export default function AdicionarPreparoView() {
 
@@ -21,6 +25,7 @@ export default function AdicionarPreparoView() {
     const [quantidade, setQuantidade] = useState("");
     const [data, setData] = useState("");
     const [hora, setHora] = useState("");
+    const [nomeDoLaboratorio, setNomeDoLaboratorio] = useState("");
 
     const [nome, setNome] = useState("");
     const [endereco, setEndereco] = useState("");
@@ -67,6 +72,22 @@ export default function AdicionarPreparoView() {
         RETORNO: {
             componente: Retorno,
             porFolha: 3,
+        },
+        "ULTRASSONOGRAFIA-DE-ARTICULACAO": {
+            componente: UltrassonografiaDaArticulacao,
+            porFolha: 4,
+        },
+        "ULTRASSONOGRAFIA-DE-PARTES-MOLES": {
+            componente: UltrassonografiaDePartesMoles,
+            porFolha: 4,
+        },
+        "ULTRASSONOGRAFIA-DE-CERVICAL": {
+            componente: UltrassonografiaDeCervical,
+            porFolha: 4,
+        },
+        "ULTRASSONOGRAFIA-DE-TIREOIDE": {
+            componente: UltrassonografiaDeTireoide,
+            porFolha: 4,
         },
     }
 
@@ -154,6 +175,42 @@ export default function AdicionarPreparoView() {
                             }`}
                     >
                         Retorno
+                    </button>
+                    <button
+                        onClick={() => setPreparoSelecionado("ULTRASSONOGRAFIA-DE-ARTICULACAO")}
+                        className={`border rounded-lg h-12 transition ${preparoSelecionado === "ULTRASSONOGRAFIA-DE-ARTICULACAO"
+                            ? "bg-blue-600 text-white"
+                            : ""
+                            }`}
+                    >
+                        Ultrassonografia de Articulação
+                    </button>
+                    <button
+                        onClick={() => setPreparoSelecionado("ULTRASSONOGRAFIA-DE-PARTES-MOLES")}
+                        className={`border rounded-lg h-12 transition ${preparoSelecionado === "ULTRASSONOGRAFIA-DE-PARTES-MOLES"
+                            ? "bg-blue-600 text-white"
+                            : ""
+                            }`}
+                    >
+                        Ultrassonografia de Partes Moles
+                    </button>
+                    <button
+                        onClick={() => setPreparoSelecionado("ULTRASSONOGRAFIA-DE-CERVICAL")}
+                        className={`border rounded-lg h-12 transition ${preparoSelecionado === "ULTRASSONOGRAFIA-DE-CERVICAL"
+                            ? "bg-blue-600 text-white"
+                            : ""
+                            }`}
+                    >
+                        Ultrassonografia de Cervical
+                    </button>
+                    <button
+                        onClick={() => setPreparoSelecionado("ULTRASSONOGRAFIA-DE-TIREOIDE")}
+                        className={`border rounded-lg h-12 transition ${preparoSelecionado === "ULTRASSONOGRAFIA-DE-TIREOIDE"
+                            ? "bg-blue-600 text-white"
+                            : ""
+                            }`}
+                    >
+                        Ultrassonografia de Tireóide
                     </button>
                 </div>
                 {preparoSelecionado && preparoSelecionado === 'PSIQUIATRIA' && (
@@ -340,102 +397,160 @@ export default function AdicionarPreparoView() {
                                 type="checkbox"
                                 id="semPreenchimento"
                                 checked={semPreenchimento}
-                                onChange={(e) => setSemPreenchimento(e.target.checked)}
+                                onChange={(e) => {
+                                    setSemPreenchimento(e.target.checked)
+                                    setQuantidade('1')
+                                }}
                             />
 
                             <label htmlFor="semPreenchimento">
                                 Imprimir sem preenchimento
                             </label>
                         </div>
-                        <div className="flex flex-col gap-2 ">
+                        {
+                            semPreenchimento === false ? (
+                                <>
+                                    <div className="flex flex-col gap-2 ">
+                                        <label>
+                                            Nome:
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={nome}
+                                            onChange={(e) => setNome(e.target.value)}
+                                            className="border rounded-lg h-10 px-3"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2 ">
+                                        <label>
+                                            Endereço:
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={endereco}
+                                            onChange={(e) => setEndereco(e.target.value)}
+                                            className="border rounded-lg h-10 px-3"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2 ">
+                                        <label>
+                                            Data de nascimento:
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={dataDeNascimento}
+                                            onChange={(e) => setDataDeNascimento(e.target.value)}
+                                            className="border rounded-lg h-10 px-3"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2 ">
+                                        <label>
+                                            Especialidade:
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={especialidade}
+                                            onChange={(e) => setEspecialidade(e.target.value)}
+                                            className="border rounded-lg h-10 px-3"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2 ">
+                                        <label>
+                                            Medico:
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={medico}
+                                            onChange={(e) => setMedico(e.target.value)}
+                                            className="border rounded-lg h-10 px-3"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2 ">
+                                        <label>
+                                            Data da última consulta:
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={dataDaUltimaConsulta}
+                                            onChange={(e) => setDataDaUltimaConsulta(e.target.value)}
+                                            className="border rounded-lg h-10 px-3"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2 ">
+                                        <label>
+                                            Retornar em:
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={retornarEm}
+                                            onChange={(e) => setRetornarEm(e.target.value)}
+                                            className="border rounded-lg h-10 px-3"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2 ">
+                                        <label>
+                                            Telefone para Contato:
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={telefone}
+                                            onChange={(e) => setTelefone(e.target.value)}
+                                            className="border rounded-lg h-10 px-3"
+                                        />
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex flex-col gap-2 col-span-2">
+                                        <label>
+                                            Quantidade
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            value={quantidade}
+                                            onChange={(e) => {
+                                                const valor = e.target.value.replace(/\D/g, "");
+                                                setQuantidade(valor);
+                                            }}
+                                            className="border rounded-lg h-10 px-3"
+                                        />
+                                    </div>
+                                </>
+                            )
+                        }
+                        <button
+                            type="button"
+                            onClick={gerarPDF}
+                            className="bg-green-600 text-white rounded-lg h-12 col-span-2"
+                        >
+                            Gerar PDF
+                        </button>
+                    </div>
+                )}
+                {preparoSelecionado && preparoSelecionado === 'ULTRASSONOGRAFIA-DE-ARTICULACAO' && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-2">
                             <label>
-                                Nome:
+                                Local
                             </label>
                             <input
-                                type="text"
-                                value={nome}
-                                onChange={(e) => setNome(e.target.value)}
                                 className="border rounded-lg h-10 px-3"
+                                value={local}
+                                onChange={(e) => setLocal(e.target.value)}
                             />
                         </div>
-                        <div className="flex flex-col gap-2 ">
+                        <div className="flex flex-col gap-2">
                             <label>
-                                Endereço:
+                                Nome do Laboratório
                             </label>
                             <input
-                                type="text"
-                                value={endereco}
-                                onChange={(e) => setEndereco(e.target.value)}
                                 className="border rounded-lg h-10 px-3"
+                                value={nomeDoLaboratorio}
+                                onChange={(e) => setNomeDoLaboratorio(e.target.value)}
                             />
                         </div>
-                        <div className="flex flex-col gap-2 ">
-                            <label>
-                                Data de nascimento:
-                            </label>
-                            <input
-                                type="date"
-                                value={dataDeNascimento}
-                                onChange={(e) => setDataDeNascimento(e.target.value)}
-                                className="border rounded-lg h-10 px-3"
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2 ">
-                            <label>
-                                Especialidade:
-                            </label>
-                            <input
-                                type="text"
-                                value={especialidade}
-                                onChange={(e) => setEspecialidade(e.target.value)}
-                                className="border rounded-lg h-10 px-3"
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2 ">
-                            <label>
-                                Medico:
-                            </label>
-                            <input
-                                type="text"
-                                value={medico}
-                                onChange={(e) => setMedico(e.target.value)}
-                                className="border rounded-lg h-10 px-3"
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2 ">
-                            <label>
-                                Data da última consulta:
-                            </label>
-                            <input
-                                type="date"
-                                value={dataDaUltimaConsulta}
-                                onChange={(e) => setDataDaUltimaConsulta(e.target.value)}
-                                className="border rounded-lg h-10 px-3"
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2 ">
-                            <label>
-                                Retornar em:
-                            </label>
-                            <input
-                                type="text"
-                                value={retornarEm}
-                                onChange={(e) => setRetornarEm(e.target.value)}
-                                className="border rounded-lg h-10 px-3"
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2 ">
-                            <label>
-                                Telefone para Contato:
-                            </label>
-                            <input
-                                type="text"
-                                value={telefone}
-                                onChange={(e) => setTelefone(e.target.value)}
-                                className="border rounded-lg h-10 px-3"
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2 ">
+                        <div className="flex flex-col gap-2">
                             <label>
                                 Quantidade
                             </label>
@@ -453,7 +568,145 @@ export default function AdicionarPreparoView() {
                         <button
                             type="button"
                             onClick={gerarPDF}
-                            className="bg-green-600 text-white rounded-lg h-12 "
+                            className="bg-green-600 text-white rounded-lg h-12 col-span-2"
+                        >
+                            Gerar PDF
+                        </button>
+                    </div>
+                )}
+                {preparoSelecionado && preparoSelecionado === 'ULTRASSONOGRAFIA-DE-PARTES-MOLES' && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-2">
+                            <label>
+                                Local
+                            </label>
+                            <input
+                                className="border rounded-lg h-10 px-3"
+                                value={local}
+                                onChange={(e) => setLocal(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label>
+                                Nome do Laboratório
+                            </label>
+                            <input
+                                className="border rounded-lg h-10 px-3"
+                                value={nomeDoLaboratorio}
+                                onChange={(e) => setNomeDoLaboratorio(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label>
+                                Quantidade
+                            </label>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                value={quantidade}
+                                onChange={(e) => {
+                                    const valor = e.target.value.replace(/\D/g, "");
+                                    setQuantidade(valor);
+                                }}
+                                className="border rounded-lg h-10 px-3"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={gerarPDF}
+                            className="bg-green-600 text-white rounded-lg h-12 col-span-2"
+                        >
+                            Gerar PDF
+                        </button>
+                    </div>
+                )}
+                {preparoSelecionado && preparoSelecionado === 'ULTRASSONOGRAFIA-DE-CERVICAL' && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-2">
+                            <label>
+                                Local
+                            </label>
+                            <input
+                                className="border rounded-lg h-10 px-3"
+                                value={local}
+                                onChange={(e) => setLocal(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label>
+                                Nome do Laboratório
+                            </label>
+                            <input
+                                className="border rounded-lg h-10 px-3"
+                                value={nomeDoLaboratorio}
+                                onChange={(e) => setNomeDoLaboratorio(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label>
+                                Quantidade
+                            </label>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                value={quantidade}
+                                onChange={(e) => {
+                                    const valor = e.target.value.replace(/\D/g, "");
+                                    setQuantidade(valor);
+                                }}
+                                className="border rounded-lg h-10 px-3"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={gerarPDF}
+                            className="bg-green-600 text-white rounded-lg h-12 col-span-2"
+                        >
+                            Gerar PDF
+                        </button>
+                    </div>
+                )}
+                {preparoSelecionado && preparoSelecionado === 'ULTRASSONOGRAFIA-DE-TIREOIDE' && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-2">
+                            <label>
+                                Local
+                            </label>
+                            <input
+                                className="border rounded-lg h-10 px-3"
+                                value={local}
+                                onChange={(e) => setLocal(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label>
+                                Nome do Laboratório
+                            </label>
+                            <input
+                                className="border rounded-lg h-10 px-3"
+                                value={nomeDoLaboratorio}
+                                onChange={(e) => setNomeDoLaboratorio(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label>
+                                Quantidade
+                            </label>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                value={quantidade}
+                                onChange={(e) => {
+                                    const valor = e.target.value.replace(/\D/g, "");
+                                    setQuantidade(valor);
+                                }}
+                                className="border rounded-lg h-10 px-3"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={gerarPDF}
+                            className="bg-green-600 text-white rounded-lg h-12 col-span-2"
                         >
                             Gerar PDF
                         </button>
@@ -543,6 +796,54 @@ export default function AdicionarPreparoView() {
                                         telefone={telefone}
                                         semPreenchimento={semPreenchimento}
                                         key={indice}
+                                    />
+                                ))}
+                            </FolhaA4>
+                        ))
+                    }
+                    {preparoSelecionado === "ULTRASSONOGRAFIA-DE-ARTICULACAO" &&
+                        paginas.map((pagina, indicePagina) => (
+                            <FolhaA4 key={indicePagina}>
+                                {pagina.map((_, indice) => (
+                                    <UltrassonografiaDaArticulacao
+                                        local={local}
+                                        nomeDoLaboratorio={nomeDoLaboratorio}
+                                    />
+                                ))}
+                            </FolhaA4>
+                        ))
+                    }
+                    {preparoSelecionado === "ULTRASSONOGRAFIA-DE-PARTES-MOLES" &&
+                        paginas.map((pagina, indicePagina) => (
+                            <FolhaA4 key={indicePagina}>
+                                {pagina.map((_, indice) => (
+                                    <UltrassonografiaDePartesMoles
+                                        local={local}
+                                        nomeDoLaboratorio={nomeDoLaboratorio}
+                                    />
+                                ))}
+                            </FolhaA4>
+                        ))
+                    }
+                    {preparoSelecionado === "ULTRASSONOGRAFIA-DE-CERVICAL" &&
+                        paginas.map((pagina, indicePagina) => (
+                            <FolhaA4 key={indicePagina}>
+                                {pagina.map((_, indice) => (
+                                    <UltrassonografiaDeCervical
+                                        local={local}
+                                        nomeDoLaboratorio={nomeDoLaboratorio}
+                                    />
+                                ))}
+                            </FolhaA4>
+                        ))
+                    }
+                    {preparoSelecionado === "ULTRASSONOGRAFIA-DE-TIREOIDE" &&
+                        paginas.map((pagina, indicePagina) => (
+                            <FolhaA4 key={indicePagina}>
+                                {pagina.map((_, indice) => (
+                                    <UltrassonografiaDeCervical
+                                        local={local}
+                                        nomeDoLaboratorio={nomeDoLaboratorio}
                                     />
                                 ))}
                             </FolhaA4>
