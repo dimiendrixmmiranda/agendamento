@@ -25,10 +25,9 @@ export interface Agendamento {
     id: string;
     tipo: "MEDICO" | "LABORATORIO";
     nome: string;
-    especialidade: string;
+    especialidades: string[];
     descricao?: string;
     corCalendario: string;
-
     disponibilidades: Disponibilidade[];
 }
 

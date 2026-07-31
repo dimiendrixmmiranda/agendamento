@@ -17,6 +17,7 @@ interface Props {
 }
 
 export default function CarrosselProfissionais({ agendamentos }: Props) {
+    console.log(agendamentos)
     return (
         <Swiper
             modules={[Navigation, Pagination]}
@@ -24,25 +25,23 @@ export default function CarrosselProfissionais({ agendamentos }: Props) {
             pagination={{ clickable: true }}
             spaceBetween={20}
             slidesPerView={3}
+            observer={true}
+            observeParents={true}
+            resizeObserver={true}
             breakpoints={{
                 0: {
                     slidesPerView: 1,
                 },
-                700: {
+                1440: {
                     slidesPerView: 2,
                 },
-                1200: {
-                    slidesPerView: 3,
-                },
-                1600: {
-                    slidesPerView: 4,
-                },
             }}
+            className="w-full!"
         >
             {agendamentos.map((prof) => (
-                <SwiperSlide key={prof.id}>
-                    <div className="border border-zinc-400 rounded-xl p-5 shadow-sm hover:shadow-lg transition h-full">
-                        <div className="flex gap-3 items-center">
+                <SwiperSlide key={prof.id} className="w-full">
+                    <div className="border border-zinc-400 rounded-xl p-5 shadow-sm hover:shadow-lg transition h-full w-full">
+                        <div className="flex gap-2 items-center">
                             <div
                                 className="rounded-full p-3 text-white text-2xl"
                                 style={{
@@ -57,9 +56,10 @@ export default function CarrosselProfissionais({ agendamentos }: Props) {
                                 <h2 className="font-bold text-xl capitalize">
                                     {prof.nome}
                                 </h2>
-                                <span className="text-zinc-500 capitalize">
-                                    {prof.especialidade}
-                                </span>
+
+                                {prof.especialidades?.map((especialidade, i) => (
+                                    <li key={i}>{especialidade}</li>
+                                ))}
                             </div>
                         </div>
                         <div className="mt-5">
@@ -70,21 +70,21 @@ export default function CarrosselProfissionais({ agendamentos }: Props) {
                                 {prof.disponibilidades.map((disp) => (
                                     <span
                                         key={disp.id}
-                                        className="px-3 py-1 rounded-lg bg-blue-100"
+                                        className="px-3 py-1 rounded-lg bg-blue-400 text-white text-shadow-[1px_1px_2px_black]"
                                     >
                                         {new Date(disp.data).getDate()}
                                     </span>
                                 ))}
                             </div>
                         </div>
-                        <div className="mt-5 flex items-center gap-2 text-zinc-600">
+                        <div className="mt-5 flex items-center gap-2 text-zinc-800">
                             <IoLocationOutline />
                             <span>
                                 {prof.disponibilidades[0]?.local.nome}
                             </span>
                         </div>
                         <button
-                            className="mt-6 w-full rounded-lg border border-blue-600 py-2 font-semibold text-blue-700 hover:bg-blue-700 hover:text-white transition"
+                            className="mt-6 w-full rounded-lg border border-blue-600 py-2 font-semibold bg-blue-600 text-white text-shadow-[1px_1px_2px_black]"
                         >
                             Ver detalhes
                         </button>

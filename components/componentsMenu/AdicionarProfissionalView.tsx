@@ -1,6 +1,8 @@
 'use client'
+import { useDialog } from "@/hooks/useDialog";
 import { useProfissionais } from "@/hooks/useProfissionais";
 import { EspecialidadeMedica, TipoExame, TipoProfissional } from "@prisma/client";
+import Link from "next/link";
 import { useState } from "react";
 import { FaRegTrashAlt, FaTrashAlt } from "react-icons/fa";
 import { FaArrowsRotate, FaUserDoctor } from "react-icons/fa6";
@@ -10,13 +12,19 @@ import { TiClipboard } from "react-icons/ti";
 
 
 export default function AdicionarProfissionalView() {
-    const {profissionais} = useProfissionais()
+    const {
+        profissionais,
+        adicionarProfissional,
+        removerProfissional
+    } = useProfissionais()
+
     const [tipo, setTipo] = useState<TipoProfissional>(
         TipoProfissional.MEDICO
     )
     const [nome, setNome] = useState('')
+    const { confirm } = useDialog();
 
-    const [especialidade, setespecialidade] = useState('')
+    const [especialidade, setEspecialidade] = useState('')
     const [listaDeEspecialidades, setListaDeEspecialidades] = useState<string[]>([])
 
     const [exame, setExame] = useState('')
@@ -64,8 +72,28 @@ export default function AdicionarProfissionalView() {
         console.log(result);
     }
 
+    // async function removerProfissional(id: string) {
+    //     try {
+    //         const response = await fetch(`/api/profissional/${id}`, {
+    //             method: "DELETE",
+    //         });
+
+    //         const data = await response.json();
+
+    //         if (!response.ok) {
+    //             console.error(data);
+    //             return;
+    //         }
+
+    //         atualizar(); // do useProfissionais
+
+    //     } catch (error) {
+    //         console.error(error);
+    //     }
+    // }
+
     return (
-        <div className="w-full min-h-screen font-oswald bg-zinc-200 text-black p-8 flex flex-col gap-5">
+        <div className="w-full min-h-screen font-oswald bg-zinc-200 text-black p-8 flex flex-col gap-5" id="formCadastroProfissional">
             <div className="flex items-center gap-2">
                 <div className="rounded-full p-2 text-blue-500 border border-zinc-400 text-3xl">
                     <FaUserDoctor />
@@ -127,7 +155,7 @@ export default function AdicionarProfissionalView() {
                                 <div className="flex flex-col gap-1">
                                     <label htmlFor="especialidades">Especialidades (Médico): <b className="text-red-600">*</b></label>
                                     <div className="flex items-center gap-2">
-                                        <select className="h-[50px] p-2 border border-zinc-400 rounded-lg w-full" value={especialidade} onChange={(e) => setespecialidade(e.target.value)}>
+                                        <select className="h-[50px] p-2 border border-zinc-400 rounded-lg w-full" value={especialidade} onChange={(e) => setEspecialidade(e.target.value)}>
                                             <option value="">Selecione</option>
                                             {Object.values(EspecialidadeMedica).map(item => (
                                                 <option key={item} value={item}>
@@ -147,18 +175,18 @@ export default function AdicionarProfissionalView() {
                                                     especialidade
                                                 ]);
 
-                                                setespecialidade("");
+                                                setEspecialidade("");
                                             }}
                                         >
                                             Adicionar
                                         </button>
                                     </div>
                                     <div className="mt-4">
-                                        <ul className="flex flex-col gap-2">
+                                        <ul className="flex flex-wrap gap-2">
                                             {
                                                 listaDeEspecialidades.map(((especialidade, i) => {
                                                     return (
-                                                        <li key={i} className="flex items-center justify-between">
+                                                        <li key={i} className="flex items-center justify-between gap-2 border border-zinc-400 p-1 rounded-xl px-3">
                                                             <p>
                                                                 {especialidade}
                                                             </p>
@@ -228,7 +256,10 @@ export default function AdicionarProfissionalView() {
                         }
                     </div>
                     <div className="flex gap-2 ml-auto">
-                        <button className="flex items-center gap-1 text-2xl bg-blue-600 px-4 py-2 text-white rounded-xl">
+                        <button className="flex items-center gap-1 text-2xl bg-blue-600 px-4 py-2 text-white rounded-xl" onClick={() => {
+                            setEspecialidade("")
+                            setNome("")
+                        }}>
                             <FaArrowsRotate />
                             <span>Limpar</span>
                         </button>
@@ -249,63 +280,89 @@ export default function AdicionarProfissionalView() {
                         <span className="text-sm">Lista de Médicos e Laboratórios Cadastrados.</span>
                     </div>
                 </div>
-                <div>
-                    <ul className="grid grid-cols-[100px_140px_1fr_140px_100px] gap-4 border-b border-zinc-500 p-2">
-                        <li>
-                            <p>Tipo</p>
-                        </li>
-                        <li>
-                            <p>Nome</p>
-                        </li>
-                        <li>
-                            <p>Especialidade/Exames</p>
-                        </li>
-                        <li>
-                            <p>Cidade</p>
-                        </li>
-                        <li>
-                            <p>Ações</p>
-                        </li>
-                    </ul>
-                    <ul>
-                        {
-                            profissionais.map((profissional, i) => {
-                                return (
-                                    <li key={i} className="grid grid-cols-[100px_140px_1fr_140px_100px] gap-4 border-b border-zinc-500 p-2">
-                                        <div>
-                                            <span>{profissional.tipo}</span>
-                                        </div>
-                                        <div>
-                                            <span>{profissional.nome}</span>
-                                        </div>
-                                        <div className="flex flex-wrap leading-5">
-                                            {
-                                                profissional.especialidades.length > 0 ? profissional.especialidades.map((esp, i) => {
-                                                    return (
-                                                        <p key={i}>{esp.replaceAll('_', ' ')}</p>
-                                                    )
-                                                }) : ('')
-                                            }
-                                            {
-                                                profissional.exames.length > 0 ? profissional.exames.map((esp, i) => {
-                                                    return (
-                                                        <p key={i}>{esp.replaceAll('_', ' ')}</p>
-                                                    )
-                                                }) : ('')
-                                            }
-                                        </div>
-                                        <div>
-                                            <span>Joaquim Távora - PR</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button className="p-2 border border-zinc-800 rounded-xl"><PiPencilSimpleLineFill /></button>
-                                            <button className="p-2 border border-zinc-800 rounded-xl"><FaTrashAlt /></button>
-                                        </div>
-                                    </li>
-                                )
-                            })
-                        }
-                    </ul>
+                <div className="flex flex-col gap-2">
+                    {
+                        profissionais.length > 0 ? (
+                            <>
+                                <div>
+                                    <ul className="grid grid-cols-[100px_140px_1fr_140px_100px] gap-4 border-b border-zinc-500 p-2">
+                                        <li>
+                                            <p>Tipo</p>
+                                        </li>
+                                        <li>
+                                            <p>Nome</p>
+                                        </li>
+                                        <li>
+                                            <p>Especialidade/Exames</p>
+                                        </li>
+                                        <li>
+                                            <p>Cidade</p>
+                                        </li>
+                                        <li>
+                                            <p>Ações</p>
+                                        </li>
+                                    </ul>
+                                    <ul>
+                                        {
+                                            profissionais.map((profissional, i) => {
+                                                return (
+                                                    <li key={i} className="grid grid-cols-[100px_140px_1fr_140px_100px] gap-4 border-b border-zinc-500 p-2">
+                                                        <div>
+                                                            <span>{profissional.tipo}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span>{profissional.nome}</span>
+                                                        </div>
+                                                        <div className="flex flex-wrap leading-5">
+                                                            {
+                                                                profissional.especialidades.length > 0 ? profissional.especialidades.map((esp, i) => {
+                                                                    return (
+                                                                        <p key={i}>{esp.replaceAll('_', ' ')}</p>
+                                                                    )
+                                                                }) : ('')
+                                                            }
+                                                            {
+                                                                profissional.exames.length > 0 ? profissional.exames.map((esp, i) => {
+                                                                    return (
+                                                                        <p key={i}>{esp.replaceAll('_', ' ')}</p>
+                                                                    )
+                                                                }) : ('')
+                                                            }
+                                                        </div>
+                                                        <div>
+                                                            <span>Joaquim Távora - PR</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <button className="p-2 border border-zinc-800 rounded-xl"><PiPencilSimpleLineFill /></button>
+                                                            <button
+                                                                className="p-2 border border-zinc-800 rounded-xl"
+                                                                onClick={() => {
+                                                                    confirm({
+                                                                        title: "Remover profissional",
+                                                                        message: `Deseja realmente remover "${profissional.nome}"?`,
+                                                                        confirmText: "Remover",
+                                                                        cancelText: "Cancelar",
+                                                                        onConfirm: () => removerProfissional(profissional.id)
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <FaTrashAlt />
+                                                            </button>
+                                                        </div>
+                                                    </li>
+                                                )
+                                            })
+                                        }
+                                    </ul>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex flex-col gap-3">
+                                <h3 className="text-2xl text-center">Nenhum Profissional ou Laboratório Cadastrado!</h3>
+                                <Link href={'#formCadastroProfissional'} className="bg-blue-600 text-white p-2 rounded-md flex justify-center items-center">Cadastre agora mesmo!</Link>
+                            </div>
+                        )
+                    }
                 </div>
             </div>
         </div>

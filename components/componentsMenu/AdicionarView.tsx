@@ -131,6 +131,37 @@ export default function AdicionarView() {
             prev.filter((_, i) => i !== index)
         );
     }
+
+    function removerEspecialidade(index: number) {
+        setEspecialidadesSelecionadas(
+            especialidadesSelecionadas.filter((_, i) => i !== index)
+        )
+    }
+
+    function limparFormulario() {
+        setTipo(TipoProfissional.MEDICO)
+
+        setDescricao("")
+        setCor("")
+
+        setProfissionalId("")
+        setProfissional(null)
+
+        setEspecialidadeSelecionada("")
+        setEspecialidadesSelecionadas([])
+
+        setAtendimentos([])
+
+        setData("")
+        setLocalDeAtendimento(null)
+
+        setHorarioInicio("")
+        setHorarioFim("")
+        setHorarios([])
+
+        setFiltroTipo([])
+    }
+
     return (
         <div className="w-full min-h-screen font-oswald bg-zinc-200 text-black p-8 flex flex-col gap-5">
             <div className="flex items-center gap-2">
@@ -142,8 +173,8 @@ export default function AdicionarView() {
                     <p>Cadastre um medico ou laboratório e defina seus atendimentos.</p>
                 </div>
             </div>
-            <div className="flex">
-                <div className="grid grid-cols-[500px_1fr] gap-4">
+            <div className="flex w-full">
+                <div className="grid grid-cols-[500px_1fr] gap-4 w-full">
                     {/* Informações gerais */}
                     <div className="border border-zinc-400 rounded-xl p-4">
                         <div className="flex items-center gap-2">
@@ -239,10 +270,11 @@ export default function AdicionarView() {
                                         </div>
                                     </div>
 
-                                    <div>
+                                    <div className="flex flex-col gap-1 mt-2">
                                         {especialidadesSelecionadas.map((item, i) => (
-                                            <div key={i}>
-                                                {item}
+                                            <div key={i} className="flex justify-between border border-zinc-400 p-1 rounded-xl">
+                                                <p>{item}</p>
+                                                <button onClick={() => removerEspecialidade(i)}><FaRegTrashAlt /></button>
                                             </div>
                                         ))}
                                     </div>
@@ -550,7 +582,29 @@ export default function AdicionarView() {
                         </div>
                     </div>
                     <div className="grid grid-cols-2 w-fit gap-4 ml-auto col-span-2">
-                        <button onClick={() => salvar()} className="flex items-center justify-center text-center gap-2 px-4 py-2 text-xl font-bold border border-blue-600 text-blue-950 rounded-xl duration-300 transition-all cursor-pointer hover:bg-blue-600 hover:text-white hover:text-shadow-[1px_1px_2px_black]">
+                        <button
+                            onClick={() => {
+
+                                if (!profissional) {
+                                    alert("Selecione um profissional");
+                                    return;
+                                }
+
+                                if (atendimentos.length === 0) {
+                                    alert("Adicione pelo menos um dia de atendimento");
+                                    return;
+                                }
+
+                                confirm({
+                                    title: "Salvar agendamento",
+                                    message: `Deseja realmente cadastrar a agenda de "${profissional.nome}"?`,
+                                    confirmText: "Salvar",
+                                    cancelText: "Cancelar",
+                                    onConfirm: salvar
+                                });
+                                limparFormulario
+                            }}
+                            className="flex items-center justify-center text-center gap-2 px-4 py-2 text-xl font-bold border border-blue-600 text-blue-950 rounded-xl duration-300 transition-all cursor-pointer hover:bg-blue-600 hover:text-white hover:text-shadow-[1px_1px_2px_black]">
                             <IoIosSave />
                             <p>Salvar</p>
                         </button>

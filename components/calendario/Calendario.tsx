@@ -25,7 +25,7 @@ export default function Calendario({
 	const calendario = useCalendario();
 
 	return (
-		<div className="bg-zinc-200 rounded-xl shadow-sm border overflow-hidden w-fit">
+		<div className="bg-white rounded-xl shadow-sm border overflow-hidden w-fit">
 			<CalendarioCabecalho {...calendario} />
 			<CalendarioSemana />
 			<CalendarioGrid

@@ -1,6 +1,7 @@
 import { useDialog } from "@/hooks/useDialog";
 import { useLocais } from "@/hooks/useLocais";
 import gerarSlug from "@/utils/GerarSlug";
+import Link from "next/link";
 import { useState } from "react";
 import { BsDistributeVertical } from "react-icons/bs";
 import { FaRegTrashAlt } from "react-icons/fa";
@@ -39,7 +40,7 @@ export default function AdicionarLocalView() {
             bairro,
             pontoDeReferencia,
             observacao
-        }
+        };
 
         const response = await fetch("/api/locais", {
             method: "POST",
@@ -55,9 +56,9 @@ export default function AdicionarLocalView() {
             return;
         }
 
-        const result = await response.json();
-        limpar()
-        console.log(result);
+        limpar();
+
+        await atualizar();
     }
 
     const limpar = () => {
@@ -89,8 +90,9 @@ export default function AdicionarLocalView() {
         }
     }
 
+    console.log(locais)
     return (
-        <div className="w-full min-h-screen font-oswald bg-zinc-200 text-black p-8 flex flex-col gap-5">
+        <div className="w-full min-h-screen font-oswald bg-zinc-200 text-black p-8 flex flex-col gap-5" id="formLocal">
             <div className="flex items-center gap-2">
                 <div className="rounded-full p-2 text-blue-500 border border-zinc-400 text-3xl">
                     <IoLocationSharp />
@@ -105,9 +107,17 @@ export default function AdicionarLocalView() {
                 <form
                     className="flex flex-col gap-4"
                     onSubmit={(e) => {
-                        e.preventDefault()
-                        window.location.reload()
-                        salvar()
+                        e.preventDefault();
+
+                        confirm({
+                            title: "Salvar local",
+                            message: "Deseja realmente salvar este local?",
+                            confirmText: "Salvar",
+                            cancelText: "Cancelar",
+                            onConfirm: async () => {
+                                await salvar();
+                            }
+                        });
                     }}
                     onReset={(e) => {
                         e.preventDefault()
@@ -185,73 +195,84 @@ export default function AdicionarLocalView() {
                     <h3 className="font-bold text-xl">Lista de Locais Cadastrados</h3>
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                    <ul className="grid grid-cols-[320px_1fr_150px_100px] gap-2 w-full">
-                        <li>
-                            <h4>Local</h4>
-                        </li>
-                        <li>
-                            <h4>Endereço</h4>
-                        </li>
-                        <li>
-                            <h4>Telefone</h4>
-                        </li>
-                        <li className="flex items-center justify-center">
-                            <h4>Ações</h4>
-                        </li>
-                    </ul>
-                    <ul className="flex flex-col gap-2 w-full">
-                        {
-                            locais.map((local) => {
-                                return (
-                                    <li key={local.id} className="grid grid-cols-[320px_1fr_150px_100px] gap-2">
-                                        {/* local */}
-                                        <div className="flex items-center gap-2">
-                                            <div className="rounded-full p-2 bg-blue-200 text-blue-900 text-2xl">
-                                                <FaRegBuilding />
-                                            </div>
-                                            <div>
-                                                <div className="text-lg leading-5">
-                                                    <h3>{local.nome}</h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {/* Endereço */}
-                                        <div className="grid grid-rows-2 grid-cols-[auto_1fr] gap-1">
-                                            <div className="row-span-2 flex w-full h-full justify-center items-center text-xl">
-                                                <IoLocation />
-                                            </div>
-                                            <div className="row-span-2 flex flex-col">
-                                                <h4>{local.rua}, {local.numero}</h4>
-                                                <span className="text-xs">{local.bairro} - Joaquim Távora/PR</span>
-                                            </div>
-                                        </div>
-                                        <div className="w-full h-full flex items-center">
-                                            <p>{local.telefone}</p>
-                                        </div>
-                                        <div className="flex items-center justify-center gap-2">
-                                            <button className="border border-amber-500 p-2 rounded-xl text-amber-500">
-                                                <HiOutlinePencilSquare />
-                                            </button>
-                                            <button
-                                                className="border border-red-500 p-2 rounded-xl text-red-500"
-                                                onClick={() => {
-                                                    confirm({
-                                                        title: "Remover local",
-                                                        message: `Deseja realmente remover o local "${local.nome}"?`,
-                                                        confirmText: "Remover",
-                                                        cancelText: "Cancelar",
-                                                        onConfirm: () => removerLocal(local.id)
-                                                    });
-                                                }}
-                                            >
-                                                <FaRegTrashAlt />
-                                            </button>
-                                        </div>
+                    {
+                        locais.length > 0 ? (
+                            <>
+                                <ul className="grid grid-cols-[320px_1fr_150px_100px] gap-2 w-full">
+                                    <li>
+                                        <h4>Local</h4>
                                     </li>
-                                )
-                            })
-                        }
-                    </ul>
+                                    <li>
+                                        <h4>Endereço</h4>
+                                    </li>
+                                    <li>
+                                        <h4>Telefone</h4>
+                                    </li>
+                                    <li className="flex items-center justify-center">
+                                        <h4>Ações</h4>
+                                    </li>
+                                </ul>
+                                <ul className="flex flex-col gap-2 w-full">
+                                    {
+                                        locais.map((local) => {
+                                            return (
+                                                <li key={local.id} className="grid grid-cols-[320px_1fr_150px_100px] gap-2">
+                                                    {/* local */}
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="rounded-full p-2 bg-blue-200 text-blue-900 text-2xl">
+                                                            <FaRegBuilding />
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-lg leading-5">
+                                                                <h3>{local.nome}</h3>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {/* Endereço */}
+                                                    <div className="grid grid-rows-2 grid-cols-[auto_1fr] gap-1">
+                                                        <div className="row-span-2 flex w-full h-full justify-center items-center text-xl">
+                                                            <IoLocation />
+                                                        </div>
+                                                        <div className="row-span-2 flex flex-col">
+                                                            <h4>{local.rua}, {local.numero}</h4>
+                                                            <span className="text-xs">{local.bairro} - Joaquim Távora/PR</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="w-full h-full flex items-center">
+                                                        <p>{local.telefone}</p>
+                                                    </div>
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <button className="border border-amber-500 p-2 rounded-xl text-amber-500">
+                                                            <HiOutlinePencilSquare />
+                                                        </button>
+                                                        <button
+                                                            className="border border-red-500 p-2 rounded-xl text-red-500"
+                                                            onClick={() => {
+                                                                confirm({
+                                                                    title: "Remover local",
+                                                                    message: `Deseja realmente remover o local "${local.nome}"?`,
+                                                                    confirmText: "Remover",
+                                                                    cancelText: "Cancelar",
+                                                                    onConfirm: () => removerLocal(local.id)
+                                                                });
+                                                            }}
+                                                        >
+                                                            <FaRegTrashAlt />
+                                                        </button>
+                                                    </div>
+                                                </li>
+                                            )
+                                        })
+                                    }
+                                </ul>
+                            </>
+                        ) : (
+                            <div className="flex flex-col gap-2">
+                                <h3 className="text-2xl">Nenhum local cadastrado!</h3>
+                                <Link href={'#formLocal'} className="bg-blue-600 text-white p-2 rounded-md flex justify-center items-center">Cadastre agora mesmo!</Link>
+                            </div>
+                        )
+                    }
                 </div>
             </div>
         </div>

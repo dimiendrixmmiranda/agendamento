@@ -14,7 +14,7 @@ export default function CalendarioSemana() {
 			{diasSemana.map((dia) => (
 				<div
 					key={dia}
-					className={`py-3 text-center font-semibold text-white w-20 bg-blue-600 border border-cinza ${dia == 'Sáb' ? 'bg-orange-600': ''} ${dia == 'Dom' ? 'bg-red-600': ''}`}
+					className={`py-3 text-center font-semibold text-white w-20 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 border border-cinza ${dia == 'Sáb' ? 'bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700': ''} ${dia == 'Dom' ? 'bg-gradient-to-br from-red-500 via-red-600 to-red-700': ''}`}
 				>
 					{dia}
 				</div>

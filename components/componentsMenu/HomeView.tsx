@@ -1,14 +1,16 @@
 'use client'
 
 import Calendario from "../calendario/Calendario";
-import { useEffect, useState } from "react";
+import { Profiler, useEffect, useState } from "react";
 import { FaRegClock, FaRegUser, FaUserDoctor } from "react-icons/fa6";
 import { MdOutlineScience } from "react-icons/md";
 import { Dialog } from "primereact/dialog";
 import { PiHeartbeatBold } from "react-icons/pi";
-import { IoCalendarNumberOutline, IoDocumentTextOutline, IoLocationOutline } from "react-icons/io5";
+import { IoCalendarNumberOutline, IoCalendarOutline, IoDocumentTextOutline, IoLocationOutline } from "react-icons/io5";
 import CarrosselProfissionais from "../carrossel/Carrossel";
 import { Agendamento, useAgendamento } from "@/hooks/useAgendamentos";
+import { TipoProfissional } from "@prisma/client";
+import Image from "next/image";
 
 export default function HomeView() {
     const [pagina, setPagina] = useState<"home" | "adicionar">("home");
@@ -19,7 +21,9 @@ export default function HomeView() {
         atualizar
     } = useAgendamento()
 
-    console.log(agendamento)
+    const [tipo, setTipo] = useState<TipoProfissional>(
+        TipoProfissional.MEDICO
+    )
 
     const [menuAtivo, setMenuAtivo] = useState<'home' | 'adicionar'>('home')
 
@@ -84,6 +88,33 @@ export default function HomeView() {
             );
         })
     )
+
+
+    const meses = [
+        "JAN",
+        "FEV",
+        "MAR",
+        "ABR",
+        "MAI",
+        "JUN",
+        "JUL",
+        "AGO",
+        "SET",
+        "OUT",
+        "NOV",
+        "DEZ"
+    ]
+
+    const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth());
+
+    const profissionaisDoMes = agendamento.filter((prof) =>
+        prof.disponibilidades.some((disp) => {
+            const data = new Date(disp.data);
+
+            return data.getMonth() === mesSelecionado;
+        })
+    );
+
     return (
         <>
             <div className="bg-zinc-200 w-full h-full p-8 text-black font-oswald flex flex-col gap-5">
@@ -117,16 +148,19 @@ export default function HomeView() {
                             dataSelecionada={dataSelecionada}
                         />
                     </div>
-                    <div className="border border-zinc-400 rounded-xl p-4 text-black w-full">
-                        <h2>Profissionais e Laboratórios do mês</h2>
-                        <div>
-                            <input type="search" name="buscar" id="buscar" value={busca} onChange={(e) => setBusca(e.target.value)} />
-                        </div>
+                    <div className="border border-zinc-400 bg-white rounded-xl p-4 text-black w-full flex flex-col gap-4">
+                        <h2>Profissionais e Laboratórios do Dia</h2>
                         <div>
                             {
                                 agendamentosDoDia.length <= 0 ? (
-                                    <div>
-                                        <h3 className="text-2xl text-center">Nenhum profissional encontrado</h3>
+                                    <div className="text-cinza flex flex-col justify-center items-center gap-4">
+                                        <div className="relative w-[270px] h-[250px] flex justify-center items-center mx-auto">
+                                            <Image alt="img" src={'/assets/calendario.png'} fill className="object-cover" unoptimized/>
+                                        </div>
+                                        <h3 className="text-xl text-center">Nenhum profissional encontrado</h3>
+                                        <span className="text-center leading-4 -mt-2">
+                                            Não há profissionais ou laboratórios agendados para a data selecionada.
+                                        </span>
                                     </div>
                                 ) : (
                                     <div>
@@ -147,7 +181,7 @@ export default function HomeView() {
                                                             </div>
                                                             <div className="flex flex-col justify-center">
                                                                 <h3 className="capitalize font-bold text-xl leading-5">{prof.nome}</h3>
-                                                                <span className="capitalize text-xs leading-5">{prof.especialidade}</span>
+                                                                <span className="capitalize text-xs leading-5">{prof.especialidades?.map(esp => `${esp}`)}</span>
                                                             </div>
                                                             <div className="flex flex-col justify-center">
                                                                 <h4 className="leading-5">Dias:</h4>
@@ -160,7 +194,7 @@ export default function HomeView() {
                                         </ul>
                                         <Dialog className="w-full max-w-[900px] border border-zinc-800 teste" header={agendamentoSelecionado && (
                                             <div className="p-4">
-                                                <h2 className="font-bold text-xl">Doutor {agendamentoSelecionado.nome} - <b className="capitalize">{agendamentoSelecionado.especialidade}</b></h2>
+                                                <h2 className="font-bold text-xl">Doutor {agendamentoSelecionado.nome} - <b className="capitalize">{agendamentoSelecionado.especialidades.map(esp => `${esp} -`)}</b></h2>
                                             </div>
                                         )} visible={visible} onHide={() => setVisible(false)}>
                                             <div className="p-4 bg-zinc-100 text-blue-950 flex flex-col gap-4">
@@ -180,7 +214,7 @@ export default function HomeView() {
                                                         </div>
                                                         <div className="flex flex-col justify-center gap-1">
                                                             <h4 className="font-bold text-xl leading-4">Especialidade:</h4>
-                                                            <span className="text-sm leading-5 capitalize">{agendamentoSelecionado?.especialidade}</span>
+                                                            <span className="text-sm leading-5 capitalize">{agendamentoSelecionado?.especialidades.map(esp => `${esp} - `)}</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -262,13 +296,54 @@ export default function HomeView() {
                         </div>
                     </div>
                 </div>
-                <div className="w-full border border-zinc-400 rounded-xl p-4 flex flex-col gap-4">
-                    <div>
-                        <h3 className="font-bold text-2xl">Lista de Agendas no Mês</h3>
+                <div className="w-full border border-zinc-400 bg-white rounded-xl p-4 flex flex-col gap-4">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-blue-200 p-2 rounded-full text-2xl text-blue-600">
+                            <IoCalendarOutline />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-2xl text-cinza">Lista de Agendas no Mês</h3>
+                        </div>
                     </div>
-                    <div>
+                    <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap gap-2">
+                            {meses.map((mes, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setMesSelecionado(index)}
+                                    className={`px-3 py-2 rounded-lg border cursor-pointer transition ${mesSelecionado === index
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-white hover:bg-zinc-100"
+                                        }`}
+                                >
+                                    {mes}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setTipo("MEDICO")}
+                                className={`px-3 py-2 rounded-lg border transition cursor-pointer ${tipo === "MEDICO"
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-white hover:bg-zinc-100"
+                                    }`}
+                            >
+                                MEDICO
+                            </button>
+                            <button
+                                onClick={() => setTipo("LABORATORIO")}
+                                className={`px-3 py-2 rounded-lg border transition cursor-pointer ${tipo === "LABORATORIO"
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-white hover:bg-zinc-100"
+                                    }`}
+                            >
+                                LABORATORIO
+                            </button>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-[1fr_400px] gap-4">
                         <CarrosselProfissionais
-                            agendamentos={agendamentosDoMes}
+                            agendamentos={profissionaisDoMes}
                         />
                     </div>
                 </div>
