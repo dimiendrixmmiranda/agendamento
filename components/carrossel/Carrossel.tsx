@@ -17,7 +17,6 @@ interface Props {
 }
 
 export default function CarrosselProfissionais({ agendamentos }: Props) {
-    console.log(agendamentos)
     return (
         <Swiper
             modules={[Navigation, Pagination]}
@@ -36,7 +35,7 @@ export default function CarrosselProfissionais({ agendamentos }: Props) {
                     slidesPerView: 2,
                 },
             }}
-            className="w-full!"
+            className="w-full! row-start-2 row-end-3"
         >
             {agendamentos.map((prof) => (
                 <SwiperSlide key={prof.id} className="w-full">
@@ -53,13 +52,18 @@ export default function CarrosselProfissionais({ agendamentos }: Props) {
                                     : <MdOutlineScience />}
                             </div>
                             <div>
-                                <h2 className="font-bold text-xl capitalize">
+                                <h2 className="font-bold text-xl capitalize line-clamp-1">
                                     {prof.nome}
                                 </h2>
-
-                                {prof.especialidades?.map((especialidade, i) => (
-                                    <li key={i}>{especialidade}</li>
-                                ))}
+                                <p className="line-clamp-1">
+                                    {
+                                        prof.especialidades?.map((especialidade, i) => {
+                                            return (
+                                                `${especialidade.replaceAll('_', ' ')}, `
+                                            )
+                                        })
+                                    }
+                                </p>
                             </div>
                         </div>
                         <div className="mt-5">

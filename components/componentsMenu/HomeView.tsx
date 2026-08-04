@@ -3,9 +3,9 @@
 import Calendario from "../calendario/Calendario";
 import { Profiler, useEffect, useState } from "react";
 import { FaRegClock, FaRegUser, FaUserDoctor } from "react-icons/fa6";
-import { MdOutlineScience } from "react-icons/md";
+import { MdOutlineScience, MdScience } from "react-icons/md";
 import { Dialog } from "primereact/dialog";
-import { PiHeartbeatBold } from "react-icons/pi";
+import { PiHeartbeatBold, PiListMagnifyingGlassBold } from "react-icons/pi";
 import { IoCalendarNumberOutline, IoCalendarOutline, IoDocumentTextOutline, IoLocationOutline } from "react-icons/io5";
 import CarrosselProfissionais from "../carrossel/Carrossel";
 import { Agendamento, useAgendamento } from "@/hooks/useAgendamentos";
@@ -25,13 +25,65 @@ export default function HomeView() {
         TipoProfissional.MEDICO
     )
 
-    const [menuAtivo, setMenuAtivo] = useState<'home' | 'adicionar'>('home')
+    const meses = [
+        "JAN",
+        "FEV",
+        "MAR",
+        "ABR",
+        "MAI",
+        "JUN",
+        "JUL",
+        "AGO",
+        "SET",
+        "OUT",
+        "NOV",
+        "DEZ"
+    ]
 
+    const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth());
+    const [buscarAgendamento, setBuscarAgendamento] = useState('')
+
+    const [menuAtivo, setMenuAtivo] = useState<'home' | 'adicionar'>('home')
     const [visible, setVisible] = useState(false);
     const [agora, setAgora] = useState<Date | null>(null);
     const [busca, setBusca] = useState('')
     const [dataSelecionada, setDataSelecionada] = useState(new Date())
     const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<Agendamento | null>(null)
+
+    const anoAtual = agora?.getFullYear() ?? new Date().getFullYear();
+
+    const agendamentosDoMes = agendamento
+        .map((prof) => ({
+            ...prof,
+            disponibilidades: prof.disponibilidades.filter((disp) => {
+                const data = new Date(disp.data);
+
+                return (
+                    data.getMonth() === mesSelecionado &&
+                    data.getFullYear() === anoAtual
+                );
+            }),
+        }))
+        .filter((prof) => prof.disponibilidades.length > 0);
+
+    const agendamentosFiltrados = agendamentosDoMes.filter((ag) => {
+        // filtro por tipo
+        if (ag.tipo !== tipo) return false;
+
+        // se não digitou nada
+        if (!buscarAgendamento.trim()) return true;
+
+        const busca = buscarAgendamento.toLowerCase();
+
+        return (
+            ag.nome.toLowerCase().includes(busca) ||
+
+            ag.especialidades.some((esp) =>
+                esp.replaceAll("_", " ").toLowerCase().includes(busca)
+            )
+        );
+    });
+
 
     useEffect(() => {
         setAgora(new Date());
@@ -78,46 +130,13 @@ export default function HomeView() {
         )
         : [];
 
-    const agendamentosDoMes = agendamento.filter((prof) =>
-        prof.disponibilidades.some((disp) => {
-            const data = new Date(disp.data);
-
-            return (
-                data.getMonth() === agora!.getMonth() &&
-                data.getFullYear() === agora!.getFullYear()
-            );
-        })
-    )
 
 
-    const meses = [
-        "JAN",
-        "FEV",
-        "MAR",
-        "ABR",
-        "MAI",
-        "JUN",
-        "JUL",
-        "AGO",
-        "SET",
-        "OUT",
-        "NOV",
-        "DEZ"
-    ]
 
-    const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth());
-
-    const profissionaisDoMes = agendamento.filter((prof) =>
-        prof.disponibilidades.some((disp) => {
-            const data = new Date(disp.data);
-
-            return data.getMonth() === mesSelecionado;
-        })
-    );
 
     return (
         <>
-            <div className="bg-zinc-200 w-full h-full p-8 text-black font-oswald flex flex-col gap-5">
+            <div className="bg-zinc-100 w-full h-full p-8 text-black font-oswald flex flex-col gap-5">
                 {/* cabecalho */}
                 <div className="flex justify-between">
                     {agora && (
@@ -155,7 +174,7 @@ export default function HomeView() {
                                 agendamentosDoDia.length <= 0 ? (
                                     <div className="text-cinza flex flex-col justify-center items-center gap-4">
                                         <div className="relative w-[270px] h-[250px] flex justify-center items-center mx-auto">
-                                            <Image alt="img" src={'/assets/calendario.png'} fill className="object-cover" unoptimized/>
+                                            <Image alt="img" src={'/assets/calendario.png'} fill className="object-cover" unoptimized />
                                         </div>
                                         <h3 className="text-xl text-center">Nenhum profissional encontrado</h3>
                                         <span className="text-center leading-4 -mt-2">
@@ -175,17 +194,22 @@ export default function HomeView() {
                                                         <li onClick={() => {
                                                             setAgendamentoSelecionado(prof)
                                                             setVisible(true)
-                                                        }} key={i} className="grid grid-cols-[auto_1fr_90px] gap-2 border-b border-zinc-400 pb-2 cursor-pointer">
+                                                        }} key={i} className="grid grid-cols-[auto_1fr_auto_60px] gap-2 border-b border-zinc-400 pb-2 cursor-pointer">
                                                             <div className="rounded-full p-2 text-2xl w-fit h-fit my-auto text-white shadow-[0px_0px_2px_1px_black]" style={{ backgroundColor: `${prof.corCalendario}` }}>
                                                                 {identificarTipo(prof.tipo)}
                                                             </div>
-                                                            <div className="flex flex-col justify-center">
-                                                                <h3 className="capitalize font-bold text-xl leading-5">{prof.nome}</h3>
-                                                                <span className="capitalize text-xs leading-5">{prof.especialidades?.map(esp => `${esp}`)}</span>
+                                                            <div className="flex flex-col justify-center gap-1">
+                                                                <h3 className="capitalize font-bold text-xl leading-5 line-clamp-1">{prof.nome}</h3>
+                                                                <span className="capitalize text-xs leading-3.5 line-clamp-2">{prof.especialidades?.map(esp => `${esp.replaceAll('_', ' ')}, `)}</span>
                                                             </div>
-                                                            <div className="flex flex-col justify-center">
+                                                            <div className="flex flex-col justify-center px-4">
                                                                 <h4 className="leading-5">Dias:</h4>
                                                                 <span className="leading-5">{dias.map(((dia, i) => `${dia}${i < dias.length - 1 ? ', ' : ''}`))}</span>
+                                                            </div>
+                                                            <div className="flex w-full h-full">
+                                                                <button className="bg-blue-200 text-blue-700 rounded-full w-[40px] h-[40px] mx-auto my-auto flex justify-center items-center text-xl">
+                                                                    <PiListMagnifyingGlassBold />
+                                                                </button>
                                                             </div>
                                                         </li>
                                                     )
@@ -194,7 +218,7 @@ export default function HomeView() {
                                         </ul>
                                         <Dialog className="w-full max-w-[900px] border border-zinc-800 teste" header={agendamentoSelecionado && (
                                             <div className="p-4">
-                                                <h2 className="font-bold text-xl">Doutor {agendamentoSelecionado.nome} - <b className="capitalize">{agendamentoSelecionado.especialidades.map(esp => `${esp} -`)}</b></h2>
+                                                <h2 className="font-bold text-xl">{agendamentoSelecionado.nome}</h2>
                                             </div>
                                         )} visible={visible} onHide={() => setVisible(false)}>
                                             <div className="p-4 bg-zinc-100 text-blue-950 flex flex-col gap-4">
@@ -214,7 +238,7 @@ export default function HomeView() {
                                                         </div>
                                                         <div className="flex flex-col justify-center gap-1">
                                                             <h4 className="font-bold text-xl leading-4">Especialidade:</h4>
-                                                            <span className="text-sm leading-5 capitalize">{agendamentoSelecionado?.especialidades.map(esp => `${esp} - `)}</span>
+                                                            <span className="text-sm leading-5 capitalize">{agendamentoSelecionado?.especialidades[0].replaceAll('_', ' ').split(' ')[0]}</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -279,7 +303,7 @@ export default function HomeView() {
                                                         </ul>
                                                     </div>
                                                 </div>
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-2 border-b border-zinc-400 pb-4">
                                                     <div className="text-2xl font-bold rounded-full bg-blue-300 p-2">
                                                         <IoDocumentTextOutline />
                                                     </div>
@@ -287,6 +311,23 @@ export default function HomeView() {
                                                         <h3 className="font-bold text-lg leading-5">Descrição</h3>
                                                         <span>{agendamentoSelecionado?.descricao}</span>
                                                     </div>
+                                                </div>
+                                                <div className="grid grid-rows-[auto_auto_1fr] grid-cols-[auto_1fr] gap-2">
+                                                    <div className="p-2 text-2xl bg-blue-300 rounded-full my-auto row-span-2">
+                                                        <PiHeartbeatBold />
+                                                    </div>
+                                                    <div className="row-span-2">
+                                                        <h3 className="font-bold text-lg leading-5">Lista de Especialidades</h3>
+                                                    </div>
+                                                    <ul className="col-start-2 col-end-3 -mt-7 flex flex-wrap">
+                                                        {agendamentoSelecionado?.especialidades.map((esp, i) => {
+                                                            return (
+                                                                <li key={i}>
+                                                                    <p>{`${esp.replaceAll('_', ' ')}, `}</p>
+                                                                </li>
+                                                            )
+                                                        })}
+                                                    </ul>
                                                 </div>
                                             </div>
                                         </Dialog>
@@ -341,10 +382,64 @@ export default function HomeView() {
                             </button>
                         </div>
                     </div>
-                    <div className="grid grid-cols-[1fr_400px] gap-4">
-                        <CarrosselProfissionais
-                            agendamentos={profissionaisDoMes}
-                        />
+                    <div className="grid grid-cols-[1fr_400px] gap-4 2xl:gap-8 3xl:grid-cols-[1fr_550px]">
+                        <div className="flex flex-col gap-1 col-span-2">
+                            <label htmlFor="buscarAgendamento">BuscarAgendamento</label>
+                            <input
+                                className="border border-zinc-400 rounded-xl h-[35px] p-2"
+                                type="text"
+                                value={buscarAgendamento}
+                                onChange={(e) => setBuscarAgendamento(e.target.value)}
+                                placeholder="Buscar por nome ou especialidade..."
+                            />
+                        </div>
+                        {
+                            agendamentosFiltrados.length > 0 ? (
+                                <CarrosselProfissionais
+                                    agendamentos={agendamentosFiltrados}
+                                />
+                            ) : (
+                                <div className="text-cinza flex flex-col justify-center items-center gap-4 row-start-1 row-end-3 col-span-2 col-end-3">
+                                    <div className="relative w-[220px] h-[180px] flex justify-center items-center mx-auto">
+                                        <Image alt="img" src={'/assets/calendario.png'} fill className="object-cover" unoptimized />
+                                    </div>
+                                    <h3 className="text-xl text-center">Nenhum profissional ou laboratório encontrado</h3>
+                                    <span className="text-center leading-4 -mt-2">
+                                        Não há profissionais ou laboratórios agendados para este mês!
+                                    </span>
+                                </div>
+                            )
+                        }
+                        {
+                            agendamentosFiltrados.length > 0 && (
+                                <div className="w-full h-full rounded-xl grid grid-cols-2 gap-4 font-oswald">
+                                    <div className="w-full h-ful rounded-xl border border-zinc-400 flex flex-col justify-center items-center gap-4 text-cinza p-4">
+                                        <div className="w-24 h-24 flex justify-center items-center text-5xl rounded-full bg-blue-200 text-blue-700">
+                                            <FaUserDoctor />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-center">Médicos do Mês</h3>
+                                        </div>
+                                        <div className="flex flex-col justify-center items-center">
+                                            <h4 className="text-5xl font-bold">12</h4>
+                                            <span>Profissionais Ativos</span>
+                                        </div>
+                                    </div>
+                                    <div className="w-full h-ful rounded-xl border border-zinc-400 flex flex-col justify-center items-center gap-4 text-cinza p-4">
+                                        <div className="w-24 h-24 flex justify-center items-center text-5xl rounded-full bg-blue-200 text-blue-700">
+                                            <MdScience />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-center line-clamp-1 max-w-[90%] 3xl:max-w-full">Laboratórios do Mês</h3>
+                                        </div>
+                                        <div className="flex flex-col justify-center items-center">
+                                            <h4 className="text-5xl font-bold">12</h4>
+                                            <span>Laboratórios Ativos</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        }
                     </div>
                 </div>
             </div>

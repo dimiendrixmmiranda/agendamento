@@ -12,11 +12,12 @@ import formatarData from "@/utils/formatarData";
 import { useLocais } from "@/hooks/useLocais";
 import Locais from "@/types/Locais";
 import { useProfissionais } from "@/hooks/useProfissionais";
-import { Profissional, TipoProfissional } from "@prisma/client";
+import { Profissional, TipoExame, TipoProfissional } from "@prisma/client";
 import { listaDeCores } from "@/utils/ListaDeCores";
 import { TbCancel } from "react-icons/tb";
 import ConfirmDialog from "../dialog/ConfirmDialog";
 import { useDialog } from "@/hooks/useDialog";
+import limparVariosCampos from "@/utils/limparCampos";
 
 interface Horario {
     inicio: string
@@ -39,6 +40,7 @@ export default function AdicionarView() {
     const [cor, setCor] = useState('')
     const [visible, setVisible] = useState(false);
 
+    // Atendimentos
     const [data, setData] = useState("")
     const [localDeAtendimento, setLocalDeAtendimento] = useState<Locais | null>(null)
     const [horarioInicio, setHorarioInicio] = useState('')
@@ -80,7 +82,7 @@ export default function AdicionarView() {
         const dados = {
             tipo,
             nome: profissional?.nome || '',
-            especialidades: especialidadesSelecionadas,
+            especialidades: tipo === "LABORATORIO" ? profissional?.exames : especialidadesSelecionadas,
             descricao,
             corCalendario: cor,
             disponibilidades: atendimentos.map((atendimento) => ({
@@ -107,6 +109,14 @@ export default function AdicionarView() {
         }
         const result = await response.json();
         console.log("Agendamento criado:", result);
+        limparVariosCampos([
+            { setValor: setTipo, valorPadrao: TipoProfissional.MEDICO },
+            { setValor: setProfissionalId, valorPadrao: "" },
+            { setValor: setDescricao, valorPadrao: "" },
+            { setValor: setCor, valorPadrao: "" },
+            { setValor: setAtendimentos, valorPadrao: [] },
+            { setValor: setEspecialidadesSelecionadas, valorPadrao: [] },
+        ]);
 
     }
 
@@ -136,30 +146,6 @@ export default function AdicionarView() {
         setEspecialidadesSelecionadas(
             especialidadesSelecionadas.filter((_, i) => i !== index)
         )
-    }
-
-    function limparFormulario() {
-        setTipo(TipoProfissional.MEDICO)
-
-        setDescricao("")
-        setCor("")
-
-        setProfissionalId("")
-        setProfissional(null)
-
-        setEspecialidadeSelecionada("")
-        setEspecialidadesSelecionadas([])
-
-        setAtendimentos([])
-
-        setData("")
-        setLocalDeAtendimento(null)
-
-        setHorarioInicio("")
-        setHorarioFim("")
-        setHorarios([])
-
-        setFiltroTipo([])
     }
 
     return (
@@ -214,7 +200,14 @@ export default function AdicionarView() {
                             filtroTipo.length > 0 ? (
                                 <div className="flex flex-col">
                                     <span>Nome: <b className="text-red-600">*</b></span>
-                                    <select className="h-[35px] border border-zinc-500 rounded-xl px-2" name="filtroTipo" id="filtroTipo" value={profissionalId} onChange={(e) => setProfissionalId(e.target.value)}>
+                                    <select className="h-[35px] border border-zinc-500 rounded-xl px-2" name="filtroTipo" id="filtroTipo" value={profissionalId}
+                                        onChange={(e) => {
+                                            setProfissionalId(e.target.value)
+                                            setEspecialidadesSelecionadas(
+                                                profissional?.exames.map(exame => exame) ?? []
+                                            )
+                                            console.log(especialidadesSelecionadas)
+                                        }}>
                                         <option value="">Selecione</option>
                                         {
                                             filtroTipo.map((filtro, i) => {
@@ -229,7 +222,7 @@ export default function AdicionarView() {
                         }
 
                         {
-                            profissional ? (
+                            tipo === 'MEDICO' ? (
                                 <div className="flex flex-col">
                                     <div className="flex flex-col gap-2">
                                         <span>
@@ -249,7 +242,7 @@ export default function AdicionarView() {
 
                                                 {listaOpcoes.map((item) => (
                                                     <option key={item} value={item}>
-                                                        {item}
+                                                        {item.replaceAll('_', ' ')}
                                                     </option>
                                                 ))}
                                             </select>
@@ -270,10 +263,63 @@ export default function AdicionarView() {
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-1 mt-2">
+                                    <div className="grid grid-cols-2 gap-1 mt-2">
                                         {especialidadesSelecionadas.map((item, i) => (
                                             <div key={i} className="flex justify-between border border-zinc-400 p-1 rounded-xl">
-                                                <p>{item}</p>
+                                                <p className="truncate max-w-[90%]">{item.replaceAll('_', ' ')}</p>
+                                                <button onClick={() => removerEspecialidade(i)}><FaRegTrashAlt /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : ''
+                        }
+                        {/* {
+                            profissional ? (
+                                <div className="flex flex-col">
+                                    <div className="flex flex-col gap-2">
+                                        <span>
+                                            {tipo === "MEDICO" ? "Especialidades" : "Exames"}:
+                                            <b className="text-red-600">*</b>
+                                        </span>
+
+                                        <div className="flex items-center">
+                                            <select
+                                                className="h-[35px] border border-zinc-500 rounded-l-xl px-2 w-full"
+                                                value={especialidadeSelecionada}
+                                                onChange={(e) =>
+                                                    setEspecialidadeSelecionada(e.target.value)
+                                                }
+                                            >
+                                                <option value="">Selecione</option>
+
+                                                {listaOpcoes.map((item) => (
+                                                    <option key={item} value={item}>
+                                                        {item.replaceAll('_', ' ')}
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                            <button
+                                                className="bg-green-600 h-[35px] px-2 rounded-r-xl text-white text-shadow-[1px_1px_2px_black]"
+                                                onClick={() => {
+                                                    if (!especialidadeSelecionada) return;
+                                                    setEspecialidadesSelecionadas([
+                                                        ...especialidadesSelecionadas,
+                                                        especialidadeSelecionada
+                                                    ]);
+                                                    setEspecialidadeSelecionada("");
+                                                }}
+                                            >
+                                                Adicionar
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-1 mt-2">
+                                        {especialidadesSelecionadas.map((item, i) => (
+                                            <div key={i} className="flex justify-between border border-zinc-400 p-1 rounded-xl">
+                                                <p className="truncate max-w-[90%]">{item.replaceAll('_', ' ')}</p>
                                                 <button onClick={() => removerEspecialidade(i)}><FaRegTrashAlt /></button>
                                             </div>
                                         ))}
@@ -284,7 +330,7 @@ export default function AdicionarView() {
                                     Selecione o profissional para ver as opções disponíveis.
                                 </div>
                             )
-                        }
+                        } */}
 
                         {/* Descrição */}
                         <div className="flex flex-col">
@@ -538,7 +584,11 @@ export default function AdicionarView() {
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <button className="border border-zinc-400 rounded-lg p-2 text-lg">Cancelar</button>
+                                                <button
+                                                    className="border border-zinc-400 rounded-lg p-2 text-lg"
+                                                >
+                                                    Cancelar
+                                                </button>
                                                 <button
                                                     className="border border-zinc-400 rounded-lg p-2 text-lg bg-green-600"
                                                     onClick={() => {
@@ -554,15 +604,14 @@ export default function AdicionarView() {
                                                             alert("Adicione pelo menos um horário")
                                                             return
                                                         }
-
                                                         const novoAtendimento: Atendimento = {
                                                             data: stringParaData(data),
                                                             local: localDeAtendimento,
                                                             horario: horarios
                                                         }
 
-                                                        setAtendimentos([
-                                                            ...atendimentos,
+                                                        setAtendimentos(prev => [
+                                                            ...prev,
                                                             novoAtendimento
                                                         ])
 
@@ -590,25 +639,51 @@ export default function AdicionarView() {
                                     return;
                                 }
 
-                                if (atendimentos.length === 0) {
+
+                                if (atendimentos.length <= 0) {
+                                    alert("Adicione pelo menos um dia de atendimento");
+                                    return;
+                                }
+                                console.log(especialidadesSelecionadas)
+                                if (especialidadesSelecionadas.length === 0) {
                                     alert("Adicione pelo menos um dia de atendimento");
                                     return;
                                 }
 
                                 confirm({
                                     title: "Salvar agendamento",
-                                    message: `Deseja realmente cadastrar a agenda de "${profissional.nome}"?`,
+                                    message: `Deseja realmente cadastrar esses dias de atendimento para o doutor "${profissional.nome}"?`,
                                     confirmText: "Salvar",
                                     cancelText: "Cancelar",
                                     onConfirm: salvar
                                 });
-                                limparFormulario
+
                             }}
                             className="flex items-center justify-center text-center gap-2 px-4 py-2 text-xl font-bold border border-blue-600 text-blue-950 rounded-xl duration-300 transition-all cursor-pointer hover:bg-blue-600 hover:text-white hover:text-shadow-[1px_1px_2px_black]">
                             <IoIosSave />
                             <p>Salvar</p>
                         </button>
-                        <button className="flex items-center justify-center text-center gap-2 px-4 py-2 text-xl font-bold border border-red-600 text-red-700 rounded-xl duration-300 transition-all cursor-pointer hover:bg-red-600 hover:text-white hover:text-shadow-[1px_1px_2px_black]">
+                        <button
+                            className="flex items-center justify-center text-center gap-2 px-4 py-2 text-xl font-bold border border-red-600 text-red-700 rounded-xl duration-300 transition-all cursor-pointer hover:bg-red-600 hover:text-white hover:text-shadow-[1px_1px_2px_black]"
+                            onClick={() => {
+                                confirm({
+                                    title: "Limpar dados do formulário",
+                                    message: `Deseja realmente limpar todos os dados ja preescritos no formulario?`,
+                                    confirmText: "Limpar",
+                                    cancelText: "Cancelar",
+                                    onConfirm: () => {
+                                        limparVariosCampos([
+                                            { setValor: setTipo, valorPadrao: TipoProfissional.MEDICO },
+                                            { setValor: setProfissionalId, valorPadrao: "" },
+                                            { setValor: setDescricao, valorPadrao: "" },
+                                            { setValor: setCor, valorPadrao: "" },
+                                            { setValor: setAtendimentos, valorPadrao: [] },
+                                        ]);
+                                    }
+                                });
+
+                            }}
+                        >
                             <TbCancel />
                             <p>Cancelar</p>
                         </button>

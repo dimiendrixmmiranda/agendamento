@@ -30,7 +30,8 @@ export async function POST(request: Request) {
             nome,
             tipo,
             especialidades,
-            exames
+            exames,
+            restricoes
         } = body;
 
         const profissional = await prisma.profissional.create({
@@ -38,7 +39,8 @@ export async function POST(request: Request) {
                 nome,
                 tipo,
                 especialidades,
-                exames
+                exames,
+                restricoes
             }
         });
 
